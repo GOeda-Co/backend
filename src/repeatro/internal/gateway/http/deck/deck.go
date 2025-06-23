@@ -6,21 +6,27 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	model "repeatro/src/deck/pkg/model"
 	modelCard "repeatro/src/card/pkg/model"
+	model "repeatro/src/deck/pkg/model"
+	"repeatro/src/pkg"
 	"repeatro/src/repeatro/internal/gateway"
 )
 
 type Gateway struct {
-	addr string
+	registry discovery.Registry
 }
 
-func New(addr string) *Gateway {
-	return &Gateway{addr}
+func New(registry discovery.Registry) *Gateway {
+	return &Gateway{registry: registry}
 }
 
 func (g *Gateway) AddDeck(ctx context.Context, userClaims string, body io.ReadCloser) (*model.Deck, error) {
-	req, err := http.NewRequest(http.MethodPost, g.addr+"/decks", body)
+	url, err := gateway.GetAvailableAddresses(ctx, "decks", "/decks", g.registry.ServiceAddresses)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +56,15 @@ func (g *Gateway) AddDeck(ctx context.Context, userClaims string, body io.ReadCl
 }
 
 func (g *Gateway) ReadAllDecks(ctx context.Context, userClaims string) ([]*model.Deck, error) {
-	req, err := http.NewRequest(http.MethodGet, g.addr+"/decks", nil)
+	url, err := gateway.GetAvailableAddresses(ctx, "decks", "/decks", g.registry.ServiceAddresses)
 	if err != nil {
 		return nil, err
 	}
-	
-	fmt.Println(g.addr+"/decks")
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Set("userClaims", userClaims)
 	req = req.WithContext(ctx)
@@ -82,7 +91,12 @@ func (g *Gateway) ReadAllDecks(ctx context.Context, userClaims string) ([]*model
 }
 
 func (g *Gateway) ReadDeck(ctx context.Context, userClaims string, deckId string) (*model.Deck, error) {
-	req, err := http.NewRequest(http.MethodGet, g.addr+"/decks/"+deckId, nil)
+	url, err := gateway.GetAvailableAddresses(ctx, "decks", "/decks/"+deckId, g.registry.ServiceAddresses)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +126,12 @@ func (g *Gateway) ReadDeck(ctx context.Context, userClaims string, deckId string
 }
 
 func (g *Gateway) ReadCardsFromDeck(ctx context.Context, userClaims string, deckId string) ([]*modelCard.Card, error) {
-	req, err := http.NewRequest(http.MethodGet, g.addr+"/decks/"+deckId+"/cards", nil)
+	url, err := gateway.GetAvailableAddresses(ctx, "decks", "/decks/"+deckId+"/cards", g.registry.ServiceAddresses)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +161,12 @@ func (g *Gateway) ReadCardsFromDeck(ctx context.Context, userClaims string, deck
 }
 
 func (g *Gateway) DeleteDeck(ctx context.Context, userClaims string, deckId string) error {
-	req, err := http.NewRequest(http.MethodDelete, g.addr+"/decks/"+deckId, nil)
+	url, err := gateway.GetAvailableAddresses(ctx, "decks", "/decks/"+deckId, g.registry.ServiceAddresses)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		return err
 	}
@@ -167,7 +191,12 @@ func (g *Gateway) DeleteDeck(ctx context.Context, userClaims string, deckId stri
 }
 
 func (g *Gateway) AddCardToDeck(ctx context.Context, userClaims string, deckId string, cardId string) error {
-	req, err := http.NewRequest(http.MethodPost, g.addr+"/decks/"+deckId+"/cards/"+cardId, nil)
+	url, err := gateway.GetAvailableAddresses(ctx, "decks", "/decks/"+deckId+"/cards/"+cardId, g.registry.ServiceAddresses)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"repeatro/src/card/pkg/model"
+	"repeatro/src/pkg"
 	"repeatro/src/repeatro/internal/gateway"
 	// "github.com/google/uuid"
 	// "github.com/golang-jwt/jwt/v5"
@@ -14,18 +15,25 @@ import (
 	// "github.com/google/uuid"
 )
 
+
+
 // Gateway layer replaces repository layer in the services where other microservices cannot be used
 // Inside specific methods i do requests to my other microservices
 type Gateway struct {
-	addr string
+	registry discovery.Registry
 }
 
-func New(addr string) *Gateway {
-	return &Gateway{addr}
+func New(registry discovery.Registry) *Gateway {
+	return &Gateway{registry: registry}
 }
 
 func (g *Gateway) GetCards(ctx context.Context, userClaims string) ([]*model.Card, error) {
-	req, err := http.NewRequest(http.MethodGet, g.addr+"/cards", nil)
+	url, err := gateway.GetAvailableAddresses(ctx, "cards", "/cards", g.registry.ServiceAddresses)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +47,6 @@ func (g *Gateway) GetCards(ctx context.Context, userClaims string) ([]*model.Car
 	}
 	defer response.Body.Close()
 
-	fmt.Println(g.addr + "/cards")
 	if response.StatusCode == http.StatusNotFound {
 		return nil, gateway.ErrNotFound
 	}
@@ -56,12 +63,15 @@ func (g *Gateway) GetCards(ctx context.Context, userClaims string) ([]*model.Car
 }
 
 func (g *Gateway) AddCard(ctx context.Context, userClaims string, body io.ReadCloser) (*model.Card, error) {
-	req, err := http.NewRequest(http.MethodPost, g.addr+"/cards", body)
+	url, err := gateway.GetAvailableAddresses(ctx, "cards", "/cards", g.registry.ServiceAddresses)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println(g.addr + "/cards")
+	req, err := http.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Set("userClaims", userClaims)
 	req = req.WithContext(ctx)
@@ -88,7 +98,12 @@ func (g *Gateway) AddCard(ctx context.Context, userClaims string, body io.ReadCl
 }
 
 func (g *Gateway) UpdateCard(ctx context.Context, userClaims string, body io.ReadCloser, cardId string) (*model.Card, error) {
-	req, err := http.NewRequest(http.MethodPut, g.addr+"/cards/"+cardId, body)
+	url, err := gateway.GetAvailableAddresses(ctx, "cards", "/cards", g.registry.ServiceAddresses)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +117,6 @@ func (g *Gateway) UpdateCard(ctx context.Context, userClaims string, body io.Rea
 	}
 	defer response.Body.Close()
 
-	fmt.Println(g.addr + "/cards")
 	if response.StatusCode == http.StatusNotFound {
 		return nil, gateway.ErrNotFound
 	}
@@ -119,7 +133,12 @@ func (g *Gateway) UpdateCard(ctx context.Context, userClaims string, body io.Rea
 }
 
 func (g *Gateway) DeleteCard(ctx context.Context, userClaims string, cardId string) (string, error) {
-	req, err := http.NewRequest(http.MethodDelete, g.addr+"/cards/"+cardId, nil)
+	url, err := gateway.GetAvailableAddresses(ctx, "cards", "/cards/"+cardId, g.registry.ServiceAddresses)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		return "", err
 	}
@@ -133,7 +152,6 @@ func (g *Gateway) DeleteCard(ctx context.Context, userClaims string, cardId stri
 	}
 	defer response.Body.Close()
 
-	fmt.Println(g.addr + "/cards")
 	if response.StatusCode == http.StatusNotFound {
 		return "", gateway.ErrNotFound
 	}
@@ -146,7 +164,12 @@ func (g *Gateway) DeleteCard(ctx context.Context, userClaims string, cardId stri
 }
 
 func (g *Gateway) AddAnswers(ctx context.Context, userClaims string, body io.ReadCloser) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, g.addr+"/cards/answers", body)
+	url, err := gateway.GetAvailableAddresses(ctx, "cards", "/cards/answers", g.registry.ServiceAddresses)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return "", err
 	}
@@ -160,7 +183,6 @@ func (g *Gateway) AddAnswers(ctx context.Context, userClaims string, body io.Rea
 	}
 	defer response.Body.Close()
 
-	fmt.Println(g.addr + "/cards/answers")
 	if response.StatusCode == http.StatusNotFound {
 		return "", gateway.ErrNotFound
 	}

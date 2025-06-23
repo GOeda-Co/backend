@@ -8,20 +8,26 @@ import (
 	"net/http"
 	"repeatro/src/repeatro/internal/gateway"
 	// "repeatro/src/user/pkg/scheme"
+	"repeatro/src/pkg"
 )
 
 // Gateway layer replaces repository layer in the services where other microservices cannot be used
 // Inside specific methods i do requests to my other microservices
 type Gateway struct {
-	addr string
+	registry discovery.Registry
 }
 
-func New(addr string) *Gateway {
-	return &Gateway{addr}
+func New(registry discovery.Registry) *Gateway {
+	return &Gateway{registry: registry}
 }
 
 func (g *Gateway) Login(ctx context.Context, body io.ReadCloser) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, g.addr+"/login", body)
+	url, err := gateway.GetAvailableAddresses(ctx, "auth", "/login", g.registry.ServiceAddresses)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +57,12 @@ func (g *Gateway) Login(ctx context.Context, body io.ReadCloser) (string, error)
 }
 
 func (g *Gateway) Register(ctx context.Context, body io.ReadCloser) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, g.addr+"/register", body)
+	url, err := gateway.GetAvailableAddresses(ctx, "auth", "/register", g.registry.ServiceAddresses)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return "", err
 	}

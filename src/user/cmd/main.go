@@ -1,14 +1,19 @@
 package main
 
 import (
+	"context"
+	"flag"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"net/http"
 	_ "net/http/pprof"
 	"repeatro/internal/config"
 	"repeatro/internal/security"
-	"net/http"
+	"repeatro/src/pkg"
+	"repeatro/src/pkg/discovery/consul"
 	userHttp "repeatro/src/user/internal/controller/http"
 	"repeatro/src/user/internal/repository/postgresql"
 	"repeatro/src/user/internal/service"
@@ -16,9 +21,32 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/logger"
 )
+const serviceName = "users"
 
-// TODO: technically each microservice should have separated main and current one should be divided into three
 func main() {
+	var port int
+	flag.IntVar(&port, "port", 8082, "API handler port")
+	flag.Parse()
+	log.Printf("Starting the movie service on port %d", port)
+	registry, err := consul.NewRegistry("localhost:8500")
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	instanceID := discovery.GenerateInstanceID(serviceName)
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
+		panic(err)
+	}
+	go func() {
+		for {
+			if err := registry.ReportHealthyState(instanceID, serviceName); err != nil {
+				log.Println("Failed to report healthy state: " + err.Error())
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}()
+	defer registry.Deregister(ctx, instanceID, serviceName)
+
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -45,7 +73,7 @@ func main() {
 	router.Handle(http.MethodPost, "/register", ctrl.Register)
 	router.Handle(http.MethodPost, "/login", ctrl.Login)
 
-	if err := router.Run(":8082"); err != nil {
+	if err := router.Run(fmt.Sprintf(":%d", port)); err != nil {
 		panic(err)
 	}
 }

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"flag"
+	"fmt"
 	"log"
 	"time"
 
@@ -9,6 +12,8 @@ import (
 
 	// "repeatro/internal/middlewares"
 	"repeatro/internal/security"
+	"repeatro/src/pkg"
+	"repeatro/src/pkg/discovery/consul"
 	httphandler "repeatro/src/repeatro/internal/controller/http"
 	"repeatro/src/repeatro/internal/gateway/http/card"
 	"repeatro/src/repeatro/internal/gateway/http/deck"
@@ -18,32 +23,36 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// // TODO: technically each microservice should have separated main and current one should be divided into three
-// func main() {
-// 	config := config.InitConfig("config")
-
-// 	security := security.Security{ExpirationDelta: 600 * time.Minute}
-// 	security.GetKyes()
-
-// 	db := repositories.InitDatabase(config)
-
-// 	repositories.InitGooseMigration(db)
-
-// 	server := server.InitHTTPServer(config, db, security)
-
-// 	go func() {
-// 		log.Println(http.ListenAndServe("localhost:6060", nil))
-// 	}()
-
-// 	server.StartHttpServer()
-
-// }
+const serviceName = "cards"
 
 func main() {
+	var port int
+	flag.IntVar(&port, "port", 8083, "API handler port")
+	flag.Parse()
+	log.Printf("Starting the movie service on port %d", port)
+	registry, err := consul.NewRegistry("localhost:8500")
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	instanceID := discovery.GenerateInstanceID(serviceName)
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
+		panic(err)
+	}
+	go func() {
+		for {
+			if err := registry.ReportHealthyState(instanceID, serviceName); err != nil {
+				log.Println("Failed to report healthy state: " + err.Error())
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}()
+	defer registry.Deregister(ctx, instanceID, serviceName)
+
 	log.Println("Starting the repeatro service")
-	cardGateway := card.New("http://localhost:8084")
-	userGateway := user.New("http://localhost:8082")
-	deckGateway := deck.New("http://localhost:8085")
+	cardGateway := card.New(registry)
+	userGateway := user.New(registry)
+	deckGateway := deck.New(registry)
 	service := service.New(cardGateway, userGateway, deckGateway)
 	ctrl := httphandler.New(service)
 
@@ -77,7 +86,7 @@ func main() {
 	decks.Handle(http.MethodGet, "/:id/cards", ctrl.ReadCardsFromDeck)
 
 	
-	if err := router.Run(":8083"); err != nil {
+	if err := router.Run(fmt.Sprintf(":%d", port)); err != nil {
 		panic(err)
 	}
 }
