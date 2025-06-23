@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,27 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	claimsMap, ok := userClaims.(jwt.MapClaims)
 	if !ok {
 		return uuid.UUID{}, fmt.Errorf("cannot convert claims to map")
+	}
+
+	userIdString, ok := claimsMap["user_id"].(string)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot get user_id from claims map")
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	return userId, nil
+}
+
+func GetUserIdFromHeader(ctx *gin.Context) (uuid.UUID, error) {
+	userClaims := ctx.GetHeader("userClaims")
+
+	var claimsMap jwt.MapClaims
+	err := json.Unmarshal([]byte(userClaims), &claimsMap)
+	if err != nil {
+		return uuid.UUID{}, err
 	}
 
 	userIdString, ok := claimsMap["user_id"].(string)

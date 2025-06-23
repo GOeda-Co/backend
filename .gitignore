@@ -3,3 +3,4 @@ tmp/
 private.pem
 public.pem
 .env
+.vscode/

@@ -6,15 +6,14 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net/http"
-	"os"
-	"reflect"
 	"strings"
+
+	"os"
+
 	"time"
 
-	"repeatro/internal/models"
-	"repeatro/internal/repositories"
-
-	"repeatro/internal/tools"
+	// "repeatro/internal/models"
+	// "repeatro/internal/repositories"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -25,7 +24,6 @@ type Security struct {
 	PrivateKey      *ecdsa.PrivateKey
 	PublicKey       *ecdsa.PublicKey
 	ExpirationDelta time.Duration
-	UserRepository  *repositories.UserRepository
 }
 
 type CustomClaims struct {
@@ -77,12 +75,13 @@ func ReadECDSAPublicKey(path string) (*ecdsa.PublicKey, error) {
 }
 
 func (s *Security) GetKyes() error {
-	privateKey, err := ReadECDSAPrivateKey("./private.pem")
+	privateKey, err := ReadECDSAPrivateKey("../../../private.pem")
 	if err != nil {
 		panic(err)
+		
 	}
 
-	publicKey, err := ReadECDSAPublicKey("./public.pem")
+	publicKey, err := ReadECDSAPublicKey("../../../public.pem")
 	if err != nil {
 		panic(err)
 	}
@@ -128,6 +127,22 @@ func (s *Security) DecodeToken(token string) (CustomClaims, error) {
 	return *claimsToGet, nil
 }
 
+func (s *Security) validateToken(tokenString string, ctx *gin.Context) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return s.PublicKey, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok {
+		return claims, nil
+	}
+
+	return nil, jwt.ErrTokenMalformed
+}
+
 func (s *Security) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -137,16 +152,16 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 		}
 
 		parts := strings.Split(authHeader, " ")
+		fmt.Println("HERE1")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			fmt.Println("HERE1")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
 			return
 		}
 
 		tokenString := parts[1]
 		claims, err := s.validateToken(tokenString, c)
+		fmt.Println("HERE2")
 		if err != nil {
-			fmt.Println("HERE2")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
@@ -154,37 +169,4 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 		c.Set("userClaims", claims)
 		c.Next()
 	}
-}
-
-func (s *Security) validateToken(tokenString string, ctx *gin.Context) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return s.PublicKey, nil
-	})
-	if err != nil {
-		fmt.Println("HERE5", token)
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if ok {
-		userIdClaims, err := tools.GetUserIdFromClaims(claims)
-		if err != nil {
-			return nil, err
-		}
-
-		user, err := s.UserRepository.ReadUser(userIdClaims)
-		if err != nil {
-			return nil, err
-		}
-
-		fmt.Println(user)
-
-		if reflect.DeepEqual(user, &models.User{}) {
-			return nil, fmt.Errorf("validation error. User does not exist")
-		}
-
-		return claims, nil
-	}
-
-	return nil, jwt.ErrTokenMalformed
 }
