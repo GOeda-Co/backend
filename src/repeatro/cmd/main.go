@@ -5,11 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	
 	"time"
 
 	"net/http"
-	
 	_ "net/http/pprof"
 
 	// "repeatro/internal/middlewares"
@@ -17,18 +15,12 @@ import (
 	"repeatro/src/pkg"
 	"repeatro/src/pkg/discovery/consul"
 	httphandler "repeatro/src/repeatro/internal/controller/http"
-
-	// grpchandler "repeatro/src/repeatro/internal/controller/grpc"
-	// cardgateway "repeatro/src/repeatro/internal/gateway/grpc/card"
-
 	"repeatro/src/repeatro/internal/gateway/http/card"
 	"repeatro/src/repeatro/internal/gateway/http/deck"
 	"repeatro/src/repeatro/internal/gateway/http/user"
 	"repeatro/src/repeatro/internal/service"
 
 	"github.com/gin-gonic/gin"
-	// "google.golang.org/grpc"
-	// "google.golang.org/grpc/reflection"
 )
 
 const serviceName = "cards"
