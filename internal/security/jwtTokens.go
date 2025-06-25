@@ -1,6 +1,7 @@
 package security
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -12,12 +13,13 @@ import (
 
 	"time"
 
-	// "repeatro/internal/models"
-	// "repeatro/internal/repositories"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type Security struct {
@@ -78,7 +80,7 @@ func (s *Security) GetKyes() error {
 	privateKey, err := ReadECDSAPrivateKey("../../../private.pem")
 	if err != nil {
 		panic(err)
-		
+
 	}
 
 	publicKey, err := ReadECDSAPublicKey("../../../public.pem")
@@ -127,7 +129,7 @@ func (s *Security) DecodeToken(token string) (CustomClaims, error) {
 	return *claimsToGet, nil
 }
 
-func (s *Security) validateToken(tokenString string, ctx *gin.Context) (jwt.MapClaims, error) {
+func (s *Security) validateToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return s.PublicKey, nil
 	})
@@ -159,7 +161,7 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		claims, err := s.validateToken(tokenString, c)
+		claims, err := s.validateToken(tokenString)
 		fmt.Println("HERE2")
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -168,5 +170,36 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 
 		c.Set("userClaims", claims)
 		c.Next()
+	}
+}
+
+func (s *Security) AuthInterceptor() grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return nil, status.Error(codes.Unauthenticated, "missing metadata")
+		}
+
+		authHeader := md.Get("authorization")
+		if len(authHeader) == 0 {
+			return nil, status.Error(codes.Unauthenticated, "missing authorization header")
+		}
+
+		token := strings.TrimPrefix(authHeader[0], "Bearer ")
+		userID, err := s.validateToken(token)
+		if err != nil {
+			return nil, status.Error(codes.Unauthenticated, "invalid token")
+		}
+
+		// Inject user ID into context
+		ctx = context.WithValue(ctx, "userID", userID)
+
+		// Call handler
+		return handler(ctx, req)
 	}
 }

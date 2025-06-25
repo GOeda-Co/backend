@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//TODO: Continue book
 func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	userClaims, exists := ctx.Get("userClaims")
 	if !exists {
@@ -31,6 +33,44 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	}
 	return userId, nil
 }
+
+func GetUserIdFromMetadata(ctx context.Context) (uuid.UUID, error) {
+	userID, ok := ctx.Value("userID").(string)
+	if !ok || userID == "" {
+		return uuid.UUID{}, fmt.Errorf("unauthorized")
+	}
+
+	userIdUuid, err := uuid.Parse(userID)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return userIdUuid, nil
+}
+// 	md := metadata.Pairs("Authorization", "Bearer "+jwtToken)
+// 	ctx = metadata.NewOutgoingContext(ctx, md)
+// 	userClaims, exists := ctx.Get("userClaims")
+// 	if !exists {
+// 		return uuid.UUID{}, fmt.Errorf("user claims do not exist")
+// 	}
+
+// 	claimsMap, ok := userClaims.(jwt.MapClaims)
+// 	if !ok {
+// 		return uuid.UUID{}, fmt.Errorf("cannot convert claims to map")
+// 	}
+
+// 	userIdString, ok := claimsMap["user_id"].(string)
+// 	if !ok {
+// 		return uuid.UUID{}, fmt.Errorf("cannot get user_id from claims map")
+// 	}
+
+// 	userId, err := uuid.Parse(userIdString)
+// 	if err != nil {
+// 		return uuid.UUID{}, err
+// 	}
+// 	return userId, nil
+// }
+
 
 func GetUserIdFromHeader(ctx *gin.Context) (uuid.UUID, error) {
 	userClaims := ctx.GetHeader("userClaims")

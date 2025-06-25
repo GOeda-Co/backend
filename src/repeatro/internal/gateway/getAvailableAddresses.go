@@ -13,3 +13,4 @@ func GetAvailableAddresses(ctx context.Context, serviceID, endpoint string, serv
 	url := "http://" + addrs[rand.Intn(len(addrs))] + endpoint
 	return url, nil
 }
+

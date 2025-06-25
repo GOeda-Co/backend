@@ -5,14 +5,18 @@ import (
 	"flag"
 	"fmt"
 	"log"
+
 	"os"
 	"time"
 
+	// "net/http"
 	"net/http"
 	_ "net/http/pprof"
 	"repeatro/internal/config"
 	"repeatro/internal/security"
-	userHttp "repeatro/src/card/internal/controller/http"
+
+	// grpcHandler "repeatro/src/card/internal/controller/grpc"
+	cardHttp "repeatro/src/card/internal/controller/http"
 	"repeatro/src/card/internal/repository/postgresql"
 	"repeatro/src/card/internal/service"
 	"repeatro/src/pkg/discovery/consul"
@@ -68,7 +72,7 @@ func main() {
 	log.Println("Starting the user service")
 	repo := postgresql.NewPostgresRepo(config, newLogger)
 	service := services.CreateNewService(repo)
-	ctrl := userHttp.CreateNewController(service)
+	ctrl := cardHttp.CreateNewController(service)
 
 	default_router := gin.Default()
 	// default_router.Use(security.AuthMiddleware())

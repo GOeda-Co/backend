@@ -67,8 +67,6 @@ type CardService struct {
 	cardRepository   postgresql.CardRepositoryInterface
 }
 
-type CardServiceMock struct{}
-
 func CreateNewService(cardRepository *postgresql.Repository) *CardService {
 	return &CardService{
 		cardRepository:   cardRepository,
@@ -195,18 +193,3 @@ func (cm CardService) AddAnswers(userId uuid.UUID, answers []schemes.AnswerSchem
 	return nil
 }
 
-func (cm CardServiceMock) AddCard(card *model.Card) (*model.Card, error) {
-	return &model.Card{}, nil
-}
-
-func (cm CardServiceMock) ReadAllCards() ([]model.Card, error) {
-	return []model.Card{{CardId: uuid.New()}}, nil
-}
-
-func (cm CardServiceMock) UpdateCard(cardId uuid.UUID) (model.Card, error) {
-	return model.Card{CardId: uuid.New()}, nil
-}
-
-func (cm CardServiceMock) DeleteCard(cardId uuid.UUID) error {
-	return nil
-}
