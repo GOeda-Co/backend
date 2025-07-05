@@ -6,20 +6,86 @@ import (
 	"io"
 	"net/http"
 
-	"repeatro/src/card/internal/service"
-	"repeatro/src/card/pkg/model"
-	"repeatro/src/card/pkg/scheme"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/tomatoCoderq/card/internal/services/card"
+	"github.com/tomatoCoderq/card/pkg/model"
+	"github.com/tomatoCoderq/card/pkg/scheme"
+	"github.com/tomatoCoderq/card/internal/controller"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"repeatro/internal/tools"
 )
 
-type CardController struct {
-	CardService services.CardServiceInterface
+func GetUserIdFromHeader(ctx *gin.Context) (uuid.UUID, error) {
+	userClaims := ctx.GetHeader("userClaims")
+
+	var claimsMap jwt.MapClaims
+	err := json.Unmarshal([]byte(userClaims), &claimsMap)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	userIdString, ok := claimsMap["user_id"].(string)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot get user_id from claims map")
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	return userId, nil
 }
 
-func CreateNewController(cardService *services.CardService) *CardController {
+func GetUserIdFromClaims(userClaims any) (uuid.UUID, error) {
+	claimsMap, ok := userClaims.(jwt.MapClaims)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot convert claims to map")
+	}
+
+	userIdString, ok := claimsMap["user_id"].(string)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot get user_id from claims map")
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	return userId, nil
+}
+
+func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
+	userClaims, exists := ctx.Get("userClaims")
+	if !exists {
+		return uuid.UUID{}, fmt.Errorf("user claims do not exist")
+	}
+
+	claimsMap, ok := userClaims.(jwt.MapClaims)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot convert claims to map")
+	}
+
+	fmt.Println("VIUST")
+
+	userIdString, ok := claimsMap["uid"].(string)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot get user_id from claims map")
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("cannot parse uuid")
+	}
+	
+	return userId, nil
+}
+
+type CardController struct {
+	CardService controller.Card
+}
+
+func CreateNewController(cardService *services.Card) *CardController {
 	return &CardController{CardService: cardService}
 }
 
@@ -30,7 +96,7 @@ func (cc CardController) AddCard(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -54,7 +120,8 @@ func (cc CardController) AddCard(ctx *gin.Context) {
 }
 
 func (cc CardController) ReadAllCardsToLearn(ctx *gin.Context) {
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
+	fmt.Println("USS", userId)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -74,7 +141,7 @@ func (cc CardController) UpdateCard(ctx *gin.Context) {
 		return
 	}
 	
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromHeader(ctx)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -105,7 +172,7 @@ func (cc CardController) DeleteCard(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromHeader(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -128,7 +195,7 @@ func (cc CardController) AddAnswers(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromHeader(ctx)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return

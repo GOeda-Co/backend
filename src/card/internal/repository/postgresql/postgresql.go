@@ -1,17 +1,15 @@
 package postgresql
 
 import (
-	"log"
+	"log/slog"
 	"time"
 
-	"repeatro/src/card/pkg/model"
-	"repeatro/src/card/pkg/scheme"
+	"github.com/tomatoCoderq/card/pkg/model"
+	"github.com/tomatoCoderq/card/pkg/scheme"
 
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func updateCardFields(cardInitial *model.Card, card *schemes.UpdateCardScheme) {
@@ -43,24 +41,15 @@ type Repository struct {
 	db *gorm.DB
 }
 
-func NewPostgresRepo(config *viper.Viper, newLogger logger.Interface) *Repository {
-	db, err := gorm.Open(postgres.Open(config.GetString("database.connection_string")), &gorm.Config{Logger: newLogger})
+func New(connectionString string, log *slog.Logger) *Repository {
+	db, err := gorm.Open(postgres.Open(connectionString))
 	if err != nil {
-		log.Fatalf("Error during opening database")
+		log.Error("Error during opening database")
 	}
 
 	db.AutoMigrate(&model.Card{})
 
 	return &Repository{db: db}
-}
-
-type CardRepositoryInterface interface {
-	AddCard(card *model.Card) error
-	ReadAllCards(userId uuid.UUID) ([]model.Card, error)
-	ReadCard(cardId uuid.UUID) (*model.Card, error)
-	PureUpdate(card *model.Card) error
-	UpdateCard(card *model.Card, cardUpdate *schemes.UpdateCardScheme) (*model.Card, error)
-	DeleteCard(cardId uuid.UUID) error
 }
 
 func (cr Repository) AddCard(card *model.Card) error {
