@@ -1,1 +1,0 @@
-## Microservice for cards (retrieving cards, update cards, put cards, ...)
