@@ -2,8 +2,9 @@ package services
 
 import (
 	"errors"
-	"repeatro/src/deck/pkg/model"
-	"repeatro/src/card/pkg/model"
+	
+	models "github.com/tomatoCoderq/deck/pkg/model"
+	
 	// "repeatro/src/deck/internal/repository/postgresql"
 
 	"github.com/google/uuid"
@@ -11,38 +12,38 @@ import (
 
 var ErrUnauthorized = errors.New("you do not own this deck")
 
-type deckRepository interface {
+type DeckRepository interface {
 	AddDeck(deck *models.Deck) error
 	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
 	ReadAllDecks() ([]models.Deck, error)
 	ReadDeck(deckId uuid.UUID) (*models.Deck, error)
 	DeleteDeck(deckId uuid.UUID) error
 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error
-	FindAllCardsInDeck(deckId uuid.UUID) ([]model.Card, error )
+	FindAllCardsInDeck(deckId uuid.UUID) ([]models.Card, error )
 }
 
 type Service struct {
-	deckRepository deckRepository
+	DeckRepository DeckRepository
 }
 
-func CreateNewService(deckRepository deckRepository) *Service {
+func CreateNewService(DeckRepository DeckRepository) *Service {
 	return &Service{
-		deckRepository: deckRepository,
+		DeckRepository: DeckRepository,
 	}
 }
 
-// type DeckServiceInterface interface {
-// 	AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error)
-// 	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
-// 	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error)
-// 	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error)
-// 	DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error
-// 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID, userId uuid.UUID) error
-// }
+type DeckServiceInterface interface {
+	AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error)
+	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
+	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error)
+	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error)
+	DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error
+	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID, userId uuid.UUID) error
+}
 
 func (ds *Service) AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error) {
 	deck.CreatedBy = userId
-	err := ds.deckRepository.AddDeck(deck)
+	err := ds.DeckRepository.AddDeck(deck)
 	if err != nil {
 		return nil, err
 	}
@@ -50,11 +51,11 @@ func (ds *Service) AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, e
 }
 
 func (ds *Service) ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error) {
-	return ds.deckRepository.ReadAllDecksOfUser(userId)
+	return ds.DeckRepository.ReadAllDecksOfUser(userId)
 }
 
 func (ds *Service) ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error) {
-	deck, err := ds.deckRepository.ReadDeck(deckId)
+	deck, err := ds.DeckRepository.ReadDeck(deckId)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +66,8 @@ func (ds *Service) ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, e
 	return deck, nil
 }
 
-func (ds *Service) ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]model.Card, error) {
-	cards, err := ds.deckRepository.FindAllCardsInDeck(deckId)
+func (ds *Service) ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error) {
+	cards, err := ds.DeckRepository.FindAllCardsInDeck(deckId)
 	if err != nil {
 		return nil, err
 	}
@@ -75,23 +76,23 @@ func (ds *Service) ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]m
 }
   
 func (ds *Service) DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error {
-	deck, err := ds.deckRepository.ReadDeck(deckId)
+	deck, err := ds.DeckRepository.ReadDeck(deckId)
 	if err != nil {
 		return err
 	}
 	if deck.CreatedBy != userId {
 		return ErrUnauthorized
 	}
-	return ds.deckRepository.DeleteDeck(deckId)
+	return ds.DeckRepository.DeleteDeck(deckId)
 }
 
 func (ds *Service) AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID, userId uuid.UUID) error {
-	deck, err := ds.deckRepository.ReadDeck(deckId)
+	deck, err := ds.DeckRepository.ReadDeck(deckId)
 	if err != nil {
 		return err
 	}
 	if deck.CreatedBy != userId {
 		return ErrUnauthorized
 	}
-	return ds.deckRepository.AddCardToDeck(cardId, deckId)
+	return ds.DeckRepository.AddCardToDeck(cardId, deckId)
 }

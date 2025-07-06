@@ -58,7 +58,7 @@ func main() {
 		PrivateKey:      cfg.Secret,
 		ExpirationDelta: 600 * time.Minute,
 	}
-
+ 
 	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, security)
 		go func() {
 		application.GRPCServer.MustRun()

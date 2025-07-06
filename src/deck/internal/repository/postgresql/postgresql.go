@@ -1,25 +1,25 @@
 package postgresql
 
 import (
-	"log"
-	cardModel "repeatro/src/card/pkg/model"
-	"repeatro/src/deck/pkg/model"
+	"log/slog"
+
+	models "github.com/tomatoCoderq/deck/pkg/model"
 
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	
 )
 
 type Repository struct {
 	db *gorm.DB
 }
 
-func NewPostgresRepo(config *viper.Viper, newLogger logger.Interface) *Repository {
-	db, err := gorm.Open(postgres.Open(config.GetString("database.connection_string")), &gorm.Config{Logger: newLogger})
+func New(connectionString string, log *slog.Logger) *Repository {
+	db, err := gorm.Open(postgres.Open(connectionString))
 	if err != nil {
-		log.Fatalf("Error during opening database")
+		log.Error("Error during opening database")
 	}
 
 	db.AutoMigrate(&models.Deck{})
@@ -56,12 +56,12 @@ func (r *Repository) DeleteDeck(deckId uuid.UUID) error {
 	return r.db.Delete(&models.Deck{}, "deck_id = ?", deckId).Error
 }
 
-func (r *Repository) FindAllCardsInDeck(deckId uuid.UUID) ([]cardModel.Card, error) {
-	var cards []cardModel.Card
+func (r *Repository) FindAllCardsInDeck(deckId uuid.UUID) ([]models.Card, error) {
+	var cards []models.Card
 	err := r.db.Where("deck_id = ?", deckId).Find(&cards).Error
 	return cards, err
 }
 
 func (r *Repository) AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error {
-	return r.db.Model(&cardModel.Card{}).Where("card_id = ?", cardId).Update("deck_id", deckId).Error
+	return r.db.Model(&models.Card{}).Where("card_id = ?", cardId).Update("deck_id", deckId).Error
 }

@@ -6,14 +6,38 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"repeatro/internal/tools"
-	"repeatro/src/deck/internal/service"
-	"repeatro/src/deck/pkg/model"
+	"github.com/tomatoCoderq/deck/internal/service"
+	models "github.com/tomatoCoderq/deck/pkg/model"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
+func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
+	userClaims, exists := ctx.Get("userClaims")
+	if !exists {
+		return uuid.UUID{}, fmt.Errorf("user claims do not exist")
+	}
 
+	claimsMap, ok := userClaims.(jwt.MapClaims)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot convert claims to map")
+	}
+
+	fmt.Println("CLAIMS: ", claimsMap)
+
+	userIdString, ok := claimsMap["uid"].(string)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot get user_id from claims map")
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("cannot parse uuid")
+	}
+	
+	return userId, nil
+}
 type DeckController struct {
 	DeckService *services.Service
 }
@@ -30,7 +54,7 @@ func (dc DeckController) AddDeck(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -47,7 +71,7 @@ func (dc DeckController) AddDeck(ctx *gin.Context) {
 }
 
 func (dc DeckController) ReadAllDecks(ctx *gin.Context) {
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	fmt.Println("SS", userId)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -70,7 +94,7 @@ func (dc DeckController) ReadDeck(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -92,7 +116,7 @@ func (dc DeckController) ReadCardsFromDeck(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -115,7 +139,7 @@ func (dc DeckController) DeleteDeck(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -142,7 +166,7 @@ func (dc DeckController) AddCardToDeck(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := tools.GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

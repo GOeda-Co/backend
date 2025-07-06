@@ -1,10 +1,9 @@
-package models
+package model
 
 import (
 	"time"
 
 	// "repeatro/internal/models"
-	"repeatro/src/card/pkg/model"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,7 +16,7 @@ type Deck struct {
 	Name        string    `gorm:"type:varchar(100);not null;default:null" json:"name"`
 	Description string    `gorm:"type:varchar(100);" json:"description"`
 	// CardsQuantity uint          `gorm:"type:int unsigned;default=0" json:"cards_quantity"`
-	Cards []model.Card `gorm:"foreignKey:CardId;constraint:OnDelete:CASCADE"`
+	Cards []Card `gorm:"foreignKey:CardId;constraint:OnDelete:CASCADE"`
 }
 
 func (d *Deck) BeforeCreate(tx *gorm.DB) error {

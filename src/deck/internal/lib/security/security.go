@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -22,7 +21,7 @@ import (
 )
 
 type Security struct {
-	PrivateKey      *ecdsa.PrivateKey
+	PrivateKey      string
 	PublicKey       *ecdsa.PublicKey
 	ExpirationDelta time.Duration
 }
@@ -75,20 +74,16 @@ func ReadECDSAPublicKey(path string) (*ecdsa.PublicKey, error) {
 	return pubKey, nil
 }
 
-func (s *Security) GetKyes() error {
-	privateKey, err := ReadECDSAPrivateKey("../../../private.pem")
-	if err != nil {
-		panic(err)
-		
-	}
+func (s *Security) GetKyes(appSecret string) error {
+	privateKey := appSecret
 
-	publicKey, err := ReadECDSAPublicKey("../../../public.pem")
-	if err != nil {
-		panic(err)
-	}
+	// publicKey, err := ReadECDSAPublicKey("./config/public.pem")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	s.PrivateKey = privateKey
-	s.PublicKey = publicKey
+	// s.PublicKey = publicKey
 
 	return nil
 }
@@ -128,9 +123,10 @@ func (s *Security) DecodeToken(token string) (CustomClaims, error) {
 	return *claimsToGet, nil
 }
 
-func (s *Security) validateToken(tokenString string, ctx *gin.Context) (jwt.MapClaims, error) {
+func (s *Security) validateToken(tokenString string) (jwt.MapClaims, error) {
+	fmt.Println(s.PrivateKey)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return s.PublicKey, nil
+		return []byte(s.PrivateKey), nil
 	})
 	if err != nil {
 		return nil, err
@@ -160,58 +156,59 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		claims, err := s.validateToken(tokenString, c)
+		claims, err := s.validateToken(tokenString)
 		fmt.Println("HERE2")
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
+		fmt.Println("userClaims", claims)
 		c.Set("userClaims", claims)
 		c.Next()
 	}
 }
 
-func New(
-    log *slog.Logger,
-    appSecret string,
-    permProvider PermissionProvider,
-) func(next http.Handler) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-			return
-		}
+// func New(
+//     log *slog.Logger,
+//     appSecret string,
+//     permProvider PermissionProvider,
+// ) func(next http.Handler) gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		authHeader := c.GetHeader("Authorization")
+// 		if authHeader == "" {
+// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+// 			return
+// 		}
 
-		parts := strings.Split(authHeader, " ")
-		fmt.Println("HERE1")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
-			return
-		}
+// 		parts := strings.Split(authHeader, " ")
+// 		fmt.Println("HERE1")
+// 		if len(parts) != 2 || parts[0] != "Bearer" {
+// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+// 			return
+// 		}
 
-		tokenString := parts[1]
-		claims, err := s.validateToken(tokenString, c)
-		fmt.Println("HERE2")
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
-		}
+// 		tokenString := parts[1]
+// 		claims, err := s.validateToken(tokenString, c)
+// 		fmt.Println("HERE2")
+// 		if err != nil {
+// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+// 			return
+// 		}
 
-		isAdmin, err := permProvider.IsAdmin(r.Context(), claims.UID)
-            if err != nil {
-                log.Error("failed to check if user is admin", sl.Err(err))
+// 		isAdmin, err := permProvider.IsAdmin(r.Context(), claims.UID)
+//             if err != nil {
+//                 log.Error("failed to check if user is admin", sl.Err(err))
 
-                ctx := context.WithValue(r.Context(), errorKey, ErrFailedIsAdminCheck)
-                next.ServeHTTP(w, r.WithContext(ctx))
+//                 ctx := context.WithValue(r.Context(), errorKey, ErrFailedIsAdminCheck)
+//                 next.ServeHTTP(w, r.WithContext(ctx))
 
-                return
-            }
+//                 return
+//             }
 
 
-		c.Set("userClaims", claims)
-		c.Next()
-	}
-}
+// 		c.Set("userClaims", claims)
+// 		c.Next()
+// 	}
+// }
 
