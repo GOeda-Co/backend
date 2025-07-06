@@ -1,0 +1,7 @@
+env: "local"  #dev, prod, local
+conecction_max_lifetime: 60s
+connection_string: "host=postgres port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+driver_name: "postgres"
+grpc:  
+  port: 44044  
+  timeout: 10h
