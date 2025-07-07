@@ -1,24 +1,58 @@
 package security
 
 import (
+	"context"
 	"crypto/ecdsa"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"os"
-
 	"time"
-
-	// "repeatro/internal/models"
-	// "repeatro/internal/repositories"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+
+	grpcsso "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
+
+type contextKey string
+
+const UserContextKey contextKey = "authUser"
+
+func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
+	userClaims, exists := ctx.Get("userClaims")
+	if !exists {
+		return uuid.UUID{}, fmt.Errorf("user claims do not exist")
+	}
+
+	claimsMap, ok := userClaims.(jwt.MapClaims)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot convert claims to map")
+	}
+
+	userIdString, ok := claimsMap["uid"].(string)
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("cannot get user_id from claims map")
+	}
+
+	userId, err := uuid.Parse(userIdString)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("cannot parse uuid")
+	}
+
+	return userId, nil
+}
+
+type AuthUser struct {
+	ID      uuid.UUID
+	email   string
+	IsAdmin bool
+}
 
 type Security struct {
 	PrivateKey      string
@@ -29,98 +63,6 @@ type Security struct {
 type CustomClaims struct {
 	UserID               uuid.UUID `json:"user_id"`
 	jwt.RegisteredClaims           // includes exp, nbf, iat, etc.
-}
-
-func ReadECDSAPrivateKey(path string) (*ecdsa.PrivateKey, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("reading private key file: %w", err)
-	}
-
-	block, _ := pem.Decode(data)
-	if block == nil || block.Type != "EC PRIVATE KEY" {
-		return nil, fmt.Errorf("invalid PEM block type for private key: %s", block.Type)
-	}
-
-	privKey, err := x509.ParseECPrivateKey(block.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("parsing private key: %w", err)
-	}
-	return privKey, nil
-}
-
-// ReadECDSAPublicKey loads a public key from a PEM file
-func ReadECDSAPublicKey(path string) (*ecdsa.PublicKey, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("reading public key file: %w", err)
-	}
-
-	block, _ := pem.Decode(data)
-	if block == nil || block.Type != "PUBLIC KEY" {
-		return nil, fmt.Errorf("invalid PEM block type for public key: %s", block.Type)
-	}
-
-	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("parsing public key: %w", err)
-	}
-
-	pubKey, ok := pubInterface.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, fmt.Errorf("not an ECDSA public key")
-	}
-
-	return pubKey, nil
-}
-
-func (s *Security) GetKyes(appSecret string) error {
-	privateKey := appSecret
-
-	// publicKey, err := ReadECDSAPublicKey("./config/public.pem")
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	s.PrivateKey = privateKey
-	// s.PublicKey = publicKey
-
-	return nil
-}
-
-func (s *Security) EncodeString(input string, user_id uuid.UUID) (string, error) {
-	claims := CustomClaims{
-		UserID: user_id,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.ExpirationDelta)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-		},
-	}
-	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
-
-	token, err := unsignedToken.SignedString(s.PrivateKey)
-	if err != nil {
-		return "", nil
-	}
-	return token, nil
-}
-
-func (s *Security) DecodeToken(token string) (CustomClaims, error) {
-	claimsToGet := &CustomClaims{}
-	parser := jwt.NewParser(jwt.WithLeeway(0 * time.Second))
-	tokenGot, err := parser.ParseWithClaims(token, claimsToGet, func(token *jwt.Token) (interface{}, error) {
-		return &s.PublicKey, nil
-	})
-	if err != nil {
-		return CustomClaims{}, err
-	}
-
-	if !tokenGot.Valid {
-		return CustomClaims{}, fmt.Errorf("invalid token")
-	}
-
-	return *claimsToGet, nil
 }
 
 func (s *Security) validateToken(tokenString string) (jwt.MapClaims, error) {
@@ -149,7 +91,6 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 		}
 
 		parts := strings.Split(authHeader, " ")
-		fmt.Println("HERE1")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
 			return
@@ -157,15 +98,89 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 
 		tokenString := parts[1]
 		claims, err := s.validateToken(tokenString)
-		fmt.Println("HERE2")
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
-		fmt.Println("userClaims", claims)
 		c.Set("userClaims", claims)
 		c.Next()
+	}
+}
+
+func (s *Security) IsAdminMiddleware(client grpcsso.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := GetUserIdFromContext(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		isAdmin, err := client.IsAdmin(c, id)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if !isAdmin {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "not admin"})
+			return
+		}
+
+		c.Set("IsAdmin", isAdmin)
+		c.Next()
+	}
+}
+
+func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return nil, status.Errorf(codes.Unauthenticated, "missing metadata")
+		}
+		authHeaders := md["authorization"]
+		if len(authHeaders) == 0 {
+			return nil, status.Errorf(codes.Unauthenticated, "authorization token is not supplied")
+		}
+		token := strings.TrimPrefix(authHeaders[0], "Bearer ")
+		jwtClaimsMap, err := s.validateToken(token)
+		fmt.Println("UID:", jwtClaimsMap)
+		if err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid token: %v", err)
+		}
+
+		uid, ok := jwtClaimsMap["uid"].(string)
+		if !ok || uid == "" {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
+		}
+
+		fmt.Println("UID:", uid)
+
+		uidUUID, err := uuid.Parse(uid)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed during parsing user ID: %v", err)
+		}
+
+		email, ok := jwtClaimsMap["email"].(string)
+		if !ok || email == "" {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
+		}
+
+		// isAdmin, ok := jwtClaimsMap["is_admin"].(bool)
+		// if !ok {
+		// 	return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
+		// }
+
+		authUser := AuthUser{
+			uidUUID,
+			email,
+			false,
+		}
+
+		ctx = context.WithValue(ctx, UserContextKey, authUser)
+
+		fmt.Println("UID:", ctx.Value(UserContextKey))
+
+		return handler(ctx, req)
 	}
 }
 
@@ -206,9 +221,7 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 //                 return
 //             }
 
-
 // 		c.Set("userClaims", claims)
 // 		c.Next()
 // 	}
 // }
-

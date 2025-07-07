@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	ssov1 "github.com/tomatoCoderq/proto-contract/gen/go/sso"
+	ssov1 "github.com/GOeda-Co/proto-contract/gen/go/sso"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"

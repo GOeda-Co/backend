@@ -1,5 +1,4 @@
 env: "local"
-storage_path: "./storage.db"
 connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
 http_server:
   address: "0.0.0.0:8081"

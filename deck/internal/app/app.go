@@ -3,11 +3,11 @@ package app
 import (
 	"log/slog"
 
-	"github.com/tomatoCoderq/card/internal/app/grpc"
-	client "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
-	"github.com/tomatoCoderq/card/internal/lib/security"
-	"github.com/tomatoCoderq/card/internal/repository/postgresql"
-	"github.com/tomatoCoderq/card/internal/services/card"
+	"github.com/tomatoCoderq/deck/internal/app/grpc"
+	client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
+	"github.com/tomatoCoderq/deck/internal/lib/security"
+	"github.com/tomatoCoderq/deck/internal/repository/postgresql"
+	"github.com/tomatoCoderq/deck/internal/services/deck"
 )
 
 type App struct {

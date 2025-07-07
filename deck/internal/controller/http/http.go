@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/tomatoCoderq/deck/internal/service"
+	"github.com/tomatoCoderq/deck/internal/services/deck"
 	models "github.com/tomatoCoderq/deck/pkg/model"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -61,7 +61,7 @@ func (dc DeckController) AddDeck(ctx *gin.Context) {
 	}
 
 	deck.CreatedBy = userId
-	createdDeck, err := dc.DeckService.AddCard(&deck, userId)
+	createdDeck, err := dc.DeckService.AddDeck(&deck)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -159,7 +159,7 @@ func (dc DeckController) AddCardToDeck(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid card ID"})
 		return
 	}
-
+ 
 	deckId, err := uuid.Parse(ctx.Param("deck_id"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid deck ID"})

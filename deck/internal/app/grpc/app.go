@@ -9,11 +9,11 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 
-	"github.com/tomatoCoderq/card/internal/controller"
-	grpcDeck "github.com/tomatoCoderq/card/internal/controller/grpc"
+	"github.com/tomatoCoderq/deck/internal/controller"
+	grpcDeck "github.com/tomatoCoderq/deck/internal/controller/grpc"
 
-	client "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
-	"github.com/tomatoCoderq/card/internal/lib/security"
+	client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
+	"github.com/tomatoCoderq/deck/internal/lib/security"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,7 +26,7 @@ type App struct {
 }
 
 func New(log *slog.Logger,
-	cardService controller.Card,
+	deckService controller.Deck,
 	port int,
 	client *client.Client,
 	security security.Security) *App {
@@ -52,7 +52,7 @@ func New(log *slog.Logger,
 		logging.UnaryServerInterceptor(InterceptorLogger(log), loggingOpts...),
 	))
 
-	grpcCard.Register(gRPCServer, cardService)
+	grpcDeck.Register(gRPCServer, deckService)
 
 	return &App{
 		log:        log,

@@ -2,9 +2,10 @@ package services
 
 import (
 	"errors"
-	
+	"log/slog"
+
 	models "github.com/tomatoCoderq/deck/pkg/model"
-	
+
 	// "repeatro/src/deck/internal/repository/postgresql"
 
 	"github.com/google/uuid"
@@ -26,23 +27,22 @@ type Service struct {
 	DeckRepository DeckRepository
 }
 
-func CreateNewService(DeckRepository DeckRepository) *Service {
+func New(log *slog.Logger, DeckRepository DeckRepository) *Service {
 	return &Service{
 		DeckRepository: DeckRepository,
 	}
 }
 
-type DeckServiceInterface interface {
-	AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error)
-	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
-	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error)
-	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error)
-	DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error
-	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID, userId uuid.UUID) error
-}
+// type DeckServiceInterface interface {
+// 	AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error)
+// 	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
+// 	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error)
+// 	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error)
+// 	DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error
+// 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID, userId uuid.UUID) error
+// }
 
-func (ds *Service) AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error) {
-	deck.CreatedBy = userId
+func (ds *Service) AddDeck(deck *models.Deck) (*models.Deck, error) {
 	err := ds.DeckRepository.AddDeck(deck)
 	if err != nil {
 		return nil, err

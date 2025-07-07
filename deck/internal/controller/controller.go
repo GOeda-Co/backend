@@ -7,7 +7,7 @@ import (
 
 
 type Deck interface {
-	AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error)
+	AddDeck(deck *models.Deck) (*models.Deck, error)
 	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
 	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error)
 	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error)

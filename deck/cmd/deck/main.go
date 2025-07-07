@@ -1,20 +1,34 @@
 package main
 
 import (
-	"log/slog"
-	"net/http"
-	"os"
+	"context"
+	"fmt"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	// "fmt"
+	"log/slog"
+	"os"
+
+	// "time"
+
+	// "net/http"
+
+	client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
 	"github.com/tomatoCoderq/deck/internal/config"
-	userHttp "github.com/tomatoCoderq/deck/internal/controller/http"
 	"github.com/tomatoCoderq/deck/internal/lib/security"
-	"github.com/tomatoCoderq/deck/internal/repository/postgresql"
-	"github.com/tomatoCoderq/deck/internal/service"
+
+	// userHttp "github.com/tomatoCoderq/card/internal/controller/http"
+	// "github.com/tomatoCoderq/card/internal/lib/security"
+	// "github.com/tomatoCoderq/card/internal/repository/postgresql"
+	// services "github.com/tomatoCoderq/card/internal/services/card"
+
+	app "github.com/tomatoCoderq/deck/internal/app"
+	// "github.com/gin-gonic/gin"
 )
 
-const serviceName = "decks"
+const serviceName = "cards"
 
 const (
 	envLocal = "local"
@@ -30,71 +44,85 @@ func main() {
 	log.Info(
 		"starting...",
 		slog.String("env", cfg.Env),
-		slog.String("version", "123"),
 	)
 	log.Debug("debug messages are enabled")
 
-	storage := postgresql.New(cfg.ConnectionString, log)
-	service := services.CreateNewService(storage)
-	ctrl := userHttp.CreateNewController(service)
-
-	security := security.Security{ExpirationDelta: 600 * time.Minute}
-	security.GetKyes(cfg.Secret)
-
-	default_router := gin.Default()
-	default_router.Use(security.AuthMiddleware())
-
-
-	router := default_router.Group("/decks")
-
-	router.Handle(http.MethodPost, "", ctrl.AddDeck)
-	router.Handle(http.MethodGet, "", ctrl.ReadAllDecks)
-	router.Handle(http.MethodGet, "/:id", ctrl.ReadDeck)
-	router.Handle(http.MethodDelete, "/:id", ctrl.DeleteDeck)
-	router.Handle(http.MethodPost, "/:deck_id/cards/:card_id", ctrl.AddCardToDeck) // post one card
-	router.Handle(http.MethodGet, "/:id/cards", ctrl.ReadCardsFromDeck)
-
-	srv := &http.Server{
-		Addr:         cfg.Address,
-		Handler:      default_router,
-		ReadTimeout:  cfg.HTTPServer.Timeout,
-		WriteTimeout: cfg.HTTPServer.Timeout,
-		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
-	}
-
-	log.Info("Starting server")
-
-	if err := srv.ListenAndServe(); err != nil {
+	ssoClient, err := client.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
+	if err != nil {
 		panic(err)
 	}
 
-}
+	fmt.Println(ssoClient)
 
-func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
-	switch env {
-	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, nil))
-	case envDev:
-		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-		)
-	case envProd:
-		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-		)
-	default: // If env config is invalid, set prod settings by default due to security
-		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-		)
+	security := security.Security{
+		PrivateKey:      cfg.Secret,
+		ExpirationDelta: 600 * time.Minute,
 	}
-	return log
+ 
+	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, security)
+		go func() {
+		application.GRPCServer.MustRun()
+	}()
+
+	//TODO: Завершить работу программы
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
+	
+	<-stop
+
+	application.GRPCServer.Stop() 
+	//TODO: Add close for db
+	log.Info("Gracefully stopped")
+
+	// storage := postgresql.New(cfg.ConnectionString, log)
+	// service := services.New(log, storage)
+	// ctrl := userHttp.CreateNewController(service)
+
+	// security := security.Security{
+	// 	PrivateKey:      cfg.Secret,
+	// 	ExpirationDelta: 600 * time.Minute,
+	// }
+
+	// default_router := gin.Default()
+	// default_router.Use(security.AuthMiddleware())
+	// default_router.Use(security.IsAdminMiddleware(*ssoClient))
+
+	// router := default_router.Group("/cards")
+
+	// fmt.Println("EHEbqhe")
+
+	// router.Handle(http.MethodPost, "", ctrl.AddCard)
+	// router.Handle(http.MethodGet, "", ctrl.ReadAllCardsToLearn)
+	// router.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
+	// router.Handle(http.MethodDelete, "/:id", ctrl.DeleteCard)
+	// router.Handle(http.MethodPost, "/answers", ctrl.AddAnswers)
+
+	// srv := &http.Server{
+	// 	Addr:         cfg.Address,
+	// 	Handler:      default_router,
+	// 	ReadTimeout:  cfg.HTTPServer.Timeout,
+	// 	WriteTimeout: cfg.HTTPServer.Timeout,
+	// 	IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	// }
+
+	// log.Info("Starting server")
+
+	// if err := srv.ListenAndServe(); err != nil {
+	// 	panic(err)
+	// }
+
 }
 
+//start app
+
+//end app
+
+//logger
+
+// TODO: technically each microservice should have separated main and current one should be divided into three
 // func main() {
 // 	var port int
-// 	flag.IntVar(&port, "port", 8085, "API handler port")
+// 	flag.IntVar(&port, "port", 8084, "API handler port")
 // 	flag.Parse()
 // 	log.Printf("Starting the movie service on port %d", port)
 // 	registry, err := consul.NewRegistry("localhost:8500")
@@ -126,7 +154,6 @@ func setupLogger(env string) *slog.Logger {
 // 			Colorful:                  false,         // Disable color
 // 		},
 // 	)
-
 // 	security := security.Security{ExpirationDelta: 600 * time.Minute}
 // 	security.GetKyes()
 
@@ -135,20 +162,42 @@ func setupLogger(env string) *slog.Logger {
 // 	log.Println("Starting the user service")
 // 	repo := postgresql.NewPostgresRepo(config, newLogger)
 // 	service := services.CreateNewService(repo)
-// 	ctrl := deckHttp.CreateNewController(service)
+// 	ctrl := userHttp.CreateNewController(service)
 
 // 	default_router := gin.Default()
+// 	// default_router.Use(security.AuthMiddleware())
 
-// 	router := default_router.Group("/decks")
+// 	router := default_router.Group("/cards")
 
-// 	router.Handle(http.MethodPost, "", ctrl.AddDeck)
-// 	router.Handle(http.MethodGet, "", ctrl.ReadAllDecks)
-// 	router.Handle(http.MethodGet, "/:id", ctrl.ReadDeck)
-// 	router.Handle(http.MethodDelete, "/:id", ctrl.DeleteDeck)
-// 	router.Handle(http.MethodPost, "/:deck_id/cards/:card_id", ctrl.AddCardToDeck) // post one card
-// 	router.Handle(http.MethodGet, "/:id/cards", ctrl.ReadCardsFromDeck)
+// 	router.Handle(http.MethodPost, "", ctrl.AddCard)
+// 	router.Handle(http.MethodGet, "", ctrl.ReadAllCardsToLearn)
+// 	router.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
+// 	router.Handle(http.MethodDelete, "/:id", ctrl.DeleteCard)
+// 	router.Handle(http.MethodPost, "/answers", ctrl.AddAnswers)
 
 // 	if err := default_router.Run(fmt.Sprintf(":%d", port)); err != nil {
 // 		panic(err)
 // 	}
 // }
+
+func setupLogger(env string) *slog.Logger {
+	var log *slog.Logger
+
+	switch env {
+	case envLocal:
+		log = slog.New(slog.NewTextHandler(os.Stdout, nil))
+	case envDev:
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
+	case envProd:
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
+	default: // If env config is invalid, set prod settings by default due to security
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
+	}
+	return log
+}
