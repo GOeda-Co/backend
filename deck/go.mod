@@ -3,7 +3,7 @@ module github.com/tomatoCoderq/deck
 go 1.24.0
 
 require (
-	github.com/GOeda-Co/proto-contract v0.0.0-20250707105839-cd7960d27240
+	github.com/GOeda-Co/proto-contract v0.0.0-20250707121225-b756db95eb2c
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0

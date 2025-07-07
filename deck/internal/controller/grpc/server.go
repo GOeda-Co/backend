@@ -60,8 +60,8 @@ func (s *DeckServerAPI) AddDeck(ctx context.Context, in *deckv1.AddDeckRequest) 
 
 	return &deckv1.DeckResponse{Deck: convert.ModelToProtoDeck(createdDeck)}, nil
 }
-//*emptypb.Empty
-func (s *DeckServerAPI) ReadAllDecks(ctx context.Context, in *deckv1.UserRequest) (*deckv1.DeckListResponse, error) {
+
+func (s *DeckServerAPI) ReadAllDecks(ctx context.Context, in *emptypb.Empty) (*deckv1.DeckListResponse, error) {
 	authUser, err := GetAuthUser(ctx)
 	fmt.Println("Auth User", authUser)
 	if err != nil {
