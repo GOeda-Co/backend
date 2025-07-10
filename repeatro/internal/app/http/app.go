@@ -53,6 +53,7 @@ func New(
 	decks.Handle(http.MethodGet, "", ctrl.ReadAllDecks)
 	decks.Handle(http.MethodGet, "/:id", ctrl.ReadDeck)
 	decks.Handle(http.MethodDelete, "/:id", ctrl.DeleteDeck)
+	// decks.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
 	decks.Handle(http.MethodPost, "/:deck_id/cards/:card_id", ctrl.AddCardToDeck)
 	decks.Handle(http.MethodGet, "/:id/cards", ctrl.ReadCardsFromDeck)
 	

@@ -109,13 +109,14 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card,
 	return cards, nil
 }
 
-func (c *Client) UpdateCard(ctx context.Context, cid uuid.UUID, card *schemes.UpdateCardScheme) (model.Card, error) {
+func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, card *schemes.UpdateCardScheme) (model.Card, error) {
 	const op = "grpc.UpdateCard"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
 	
 	resp, err := c.api.UpdateCard(ctx, &cardv1.UpdateCardRequest{
 		CardId: cid.String(),
+		UserId: uid.String(),
 		Word:  card.Word,
 		Translation: card.Translation,
 		Easiness: card.Easiness,

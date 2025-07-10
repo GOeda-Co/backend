@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/card/internal/controller"
@@ -97,7 +98,7 @@ func (s *ServerAPI) DeleteCard(ctx context.Context, in *cardv1.DeleteCardRequest
 
 	err = s.service.DeleteCard(cardId, userId)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "Failed to delete card")
+		return nil, status.Error(codes.Internal, fmt.Sprint("Failed to delete card: %v", err))
 	}
 
 	return &cardv1.DeleteCardResponse{}, nil

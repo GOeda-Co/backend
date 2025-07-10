@@ -183,11 +183,11 @@ func (cc *Controller) UpdateCard(ctx *gin.Context) {
 		return
 	}
 
-	// userId, err := GetUserIdFromHeader(ctx)
-	// if err != nil {
-	// 	ctx.AbortWithError(http.StatusInternalServerError, err)
-	// 	return
-	// }
+	uid, err := GetUserIdFromContext(ctx)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
 
 	var cardUpdate schemes.UpdateCardScheme
 	if err = ctx.ShouldBindJSON(&cardUpdate); err != nil {
@@ -196,9 +196,9 @@ func (cc *Controller) UpdateCard(ctx *gin.Context) {
 	}
 	fmt.Println("COMEHERE")
 
-	card, err := cc.cardClient.UpdateCard(ctx, cardId, &cardUpdate)
+	card, err := cc.cardClient.UpdateCard(ctx, uid, cardId, &cardUpdate)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -213,20 +213,15 @@ func (cc *Controller) DeleteCard(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	success, err := cc.cardClient.DeleteCard(ctx, cardId, userId)
+	_, err = cc.cardClient.DeleteCard(ctx, cardId, userId)
 	if err != nil {
-		fmt.Println(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if !success {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Card"})
 		return
 	}
 	ctx.Status(http.StatusOK)
@@ -236,13 +231,13 @@ func (cc *Controller) AddAnswers(ctx *gin.Context) {
 	var answers []*schemes.AnswerScheme
 
 	if err := ctx.ShouldBindJSON(&answers); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userId, err := GetUserIdFromHeader(ctx)
+	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
