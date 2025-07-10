@@ -3,30 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
+	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
+	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
+	"github.com/tomatoCoderq/repeatro/internal/config"
+	"github.com/tomatoCoderq/repeatro/internal/lib/security"
+	"log/slog"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	// "fmt"
-	"log/slog"
-	"os"
-
-	// "time"
-
-	// "net/http"
-
-	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
-	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
-	"github.com/tomatoCoderq/repeatro/internal/config"
-	"github.com/tomatoCoderq/repeatro/internal/lib/security"
-
-	// userHttp "github.com/tomatoCoderq/card/internal/controller/http"
-	// "github.com/tomatoCoderq/card/internal/lib/security"
-	// "github.com/tomatoCoderq/card/internal/repository/postgresql"
-	// services "github.com/tomatoCoderq/card/internal/services/card"
-
 	app "github.com/tomatoCoderq/repeatro/internal/app"
-	// "github.com/gin-gonic/gin"
 )
 
 const (
@@ -56,6 +44,11 @@ func main() {
 		panic(err)
 	}
 
+	deckClient, err := deckClient.New(context.Background(), log, cfg.Clients.DECK.Address, cfg.Clients.DECK.Timeout.Abs(), cfg.Clients.DECK.RetriesCount)
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println(ssoClient)
 
 	security := security.Security{
@@ -63,7 +56,7 @@ func main() {
 		ExpirationDelta: 600 * time.Minute,
 	}
 
-	application := app.New(log, cfg.HTTPServer.Port, cfg.HTTPServer.Address, ssoClient, cardClient, security)
+	application := app.New(log, cfg.HTTPServer.Port, cfg.HTTPServer.Address, ssoClient, cardClient, deckClient, security)
 	go func() {
 		application.HttpServer.MustRun()
 	}()

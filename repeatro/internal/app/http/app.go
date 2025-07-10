@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
+	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
 	httpRepeatro "github.com/tomatoCoderq/repeatro/internal/controller/http"
 	"github.com/tomatoCoderq/repeatro/internal/lib/security"
 )
@@ -25,13 +26,13 @@ func New(
 	address string,
 	ssoClient *ssoClient.Client,
 	cardClient *cardClient.Client,
+	deckClient *deckClient.Client,
 	security security.Security,
 ) *App {
-	// Setup Gin router
 	router := gin.Default()
 	router.Use(gin.Recovery())
 
-	ctrl := httpRepeatro.New(ssoClient, cardClient)
+	ctrl := httpRepeatro.New(ssoClient, cardClient, deckClient)
 	router.Handle(http.MethodPost, "/register", ctrl.Register)
 	router.Handle(http.MethodPost, "/login", ctrl.Login)
 
@@ -45,6 +46,16 @@ func New(
 	cards.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
 	cards.Handle(http.MethodDelete, "/:id", ctrl.DeleteCard)
 	cards.Handle(http.MethodPost, "/answers", ctrl.AddAnswers)
+
+	decks := router.Group("/decks")
+	decks.Use(security.AuthMiddleware())
+	decks.Handle(http.MethodPost, "", ctrl.AddDeck)
+	decks.Handle(http.MethodGet, "", ctrl.ReadAllDecks)
+	decks.Handle(http.MethodGet, "/:id", ctrl.ReadDeck)
+	decks.Handle(http.MethodDelete, "/:id", ctrl.DeleteDeck)
+	decks.Handle(http.MethodPost, "/:deck_id/cards/:card_id", ctrl.AddCardToDeck)
+	decks.Handle(http.MethodGet, "/:id/cards", ctrl.ReadCardsFromDeck)
+	
 
 	httpServer := &http.Server{
 		Addr:    address,

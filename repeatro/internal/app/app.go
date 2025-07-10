@@ -7,6 +7,7 @@ import (
 	httpApp "github.com/tomatoCoderq/repeatro/internal/app/http"
 	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
+	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
 
 )
 
@@ -20,9 +21,10 @@ func New(
     address string,
 	ssoClient *ssoClient.Client,
 	cardClient *cardClient.Client,
+	deckClient *deckClient.Client,
 	security security.Security,
 ) *App {
-	grpcApp := httpApp.New(log, port, address, ssoClient, cardClient, security)
+	grpcApp := httpApp.New(log, port, address, ssoClient, cardClient, deckClient, security)
 
 	return &App {
 		HttpServer: grpcApp,

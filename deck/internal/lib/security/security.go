@@ -153,8 +153,6 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		}
 
-		fmt.Println("UID:", uid)
-
 		uidUUID, err := uuid.Parse(uid)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed during parsing user ID: %v", err)
@@ -162,7 +160,7 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 
 		email, ok := jwtClaimsMap["email"].(string)
 		if !ok || email == "" {
-			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
+			return nil, status.Errorf(codes.Unauthenticated, "invalid email in token")
 		}
 
 		// isAdmin, ok := jwtClaimsMap["is_admin"].(bool)

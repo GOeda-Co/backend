@@ -1,25 +1,28 @@
 package convert
 
 import (
+	"fmt"
+
+	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
+	deckv1 "github.com/GOeda-Co/proto-contract/gen/go/deck"
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/repeatro/pkg/models"
 	schemes "github.com/tomatoCoderq/repeatro/pkg/schemes"
-	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ProtoToModel(card *cardv1.Card) (*model.Card, error) {
 	cardId, err := uuid.Parse(card.CardId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cardId is invalid: %w", err)
 	}
 	createdBy, err := uuid.Parse(card.CreatedBy)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("createdBy is invalid: %w", err)
 	}
 	deckId, err := uuid.Parse(card.DeckId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("DeckId is invalid: %w", err)
 	}
 
 	return &model.Card{
@@ -55,7 +58,7 @@ func ModelToProto(card *model.Card) *cardv1.Card {
 	}
 }
 
-func ProtoToUpdateCardScheme(card *cardv1.UpdateCardRequest) *schemes.UpdateCardScheme{
+func ProtoToUpdateCardScheme(card *cardv1.UpdateCardRequest) *schemes.UpdateCardScheme {
 	return &schemes.UpdateCardScheme{
 		Word:             card.Word,
 		Translation:      card.Translation,
@@ -99,4 +102,23 @@ func AnswersToProtoSchemes(answers []*schemes.AnswerScheme) ([]*cardv1.Answer, e
 		result = append(result, converted)
 	}
 	return result, nil
+}
+
+func ProtoDeckToModel(deck *deckv1.Deck) (*model.Deck, error) {
+	deckId, err := uuid.Parse(deck.DeckId)
+	if err != nil {
+		return nil, err
+	}
+	createdBy, err := uuid.Parse(deck.CreatedBy)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Deck{
+		DeckId:      deckId,
+		CreatedBy:   createdBy,
+		CreatedAt:   deck.CreatedAt.AsTime(),
+		Name:        deck.Name,
+		Description: deck.Description,
+	}, nil
 }

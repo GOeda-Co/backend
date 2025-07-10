@@ -74,7 +74,7 @@ func InterceptorLogger(l *slog.Logger) grpclog.Logger {
 }
 
 func (c *Client) AddCard(ctx context.Context, card *model.Card) (model.Card, error) {
-	const op = "grpc.Login"
+	const op = "grpc.AddCard"
 
 	resp, err := c.api.AddCard(ctx, &cardv1.AddCardRequest{
 		Card: convert.ModelToProto(card),
@@ -92,11 +92,9 @@ func (c *Client) AddCard(ctx context.Context, card *model.Card) (model.Card, err
 func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
 	const op = "grpc.ReadAllCards"
 
-	fmt.Println("API", c.api == nil)
+	ctx = withToken(ctx, ctx.Value("token").(string))
 
-	ctxWithToken := withToken(ctx, ctx.Value("token").(string))
-
-	resp, err := c.api.ReadAllCards(ctxWithToken, &cardv1.ReadAllCardsRequest{UserId: uid.String()})
+	resp, err := c.api.ReadAllCards(ctx, &cardv1.ReadAllCardsRequest{UserId: uid.String()})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -113,6 +111,9 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card,
 
 func (c *Client) UpdateCard(ctx context.Context, cid uuid.UUID, card *schemes.UpdateCardScheme) (model.Card, error) {
 	const op = "grpc.UpdateCard"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+	
 	resp, err := c.api.UpdateCard(ctx, &cardv1.UpdateCardRequest{
 		CardId: cid.String(),
 		Word:  card.Word,
@@ -136,6 +137,9 @@ func (c *Client) UpdateCard(ctx context.Context, cid uuid.UUID, card *schemes.Up
 
 func (c *Client) DeleteCard(ctx context.Context, cid uuid.UUID, uid uuid.UUID) (bool, error) {
 	const op = "grpc.DeleteCard"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+
 	resp, err := c.api.DeleteCard(ctx, &cardv1.DeleteCardRequest{
 		CardId: cid.String(),
 		UserId: uid.String(),
@@ -148,6 +152,9 @@ func (c *Client) DeleteCard(ctx context.Context, cid uuid.UUID, uid uuid.UUID) (
 
 func (c *Client) AddAnswers(ctx context.Context, uid uuid.UUID, answers []*schemes.AnswerScheme) (string, error) {
 	const op = "grpc.AddAnswers"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+
 	convertedAnswers, err := convert.AnswersToProtoSchemes(answers)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
