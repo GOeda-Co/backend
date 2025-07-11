@@ -1,0 +1,9 @@
+env: "local"
+connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+clients:
+  sso:
+    address: "localhost:44044"
+secret: "some very secret secret"
+grpc:
+  port: 50055
+  timeout: 10h
