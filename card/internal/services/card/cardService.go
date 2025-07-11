@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"log/slog"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -76,12 +77,17 @@ func (cm Card) DeleteCard(cardId uuid.UUID, userId uuid.UUID) error {
 		return err
 	}
 
+	if cardFound == nil || reflect.DeepEqual(cardFound, &model.Card{}) {
+		return fmt.Errorf("card not found")
+	}
+
 	if cardFound.CreatedBy != userId {
 		return fmt.Errorf("cannot delete other's user card")
 	}
 
 	err = cm.cardRepository.DeleteCard(cardId)
 	if err != nil {
+
 		return nil
 	}
 

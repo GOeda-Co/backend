@@ -13,6 +13,7 @@ func NewToken(user models.User, app models.App, duration time.Duration) (string,
     // Добавляем в токен всю необходимую информацию
     claims := token.Claims.(jwt.MapClaims)  
     claims["uid"] = user.ID  
+    claims["id"] = user.ID  
     claims["email"] = user.Email  
     claims["exp"] = time.Now().Add(duration).Unix()  
     claims["app_id"] = app.ID  

@@ -148,6 +148,7 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 		}
 
 		uid, ok := jwtClaimsMap["id"].(string)
+		// fmt.Println("JWTCLAIMs", jwtClaimsMap["id"].(string))
 		if !ok || uid == "" {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		}
@@ -160,18 +161,17 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 
 		email, ok := jwtClaimsMap["email"].(string)
 		if !ok || email == "" {
-			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
+			return nil, status.Errorf(codes.Unauthenticated, "invalid email in token")
 		}
 
-		isAdmin, ok := jwtClaimsMap["is_admin"].(bool)
-		if !ok {
-			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
-		}
+		// isAdmin, ok := jwtClaimsMap["is_admin"].(bool)
+		// if !ok {
+		// 	return nil, status.Errorf(codes.Unauthenticated, "invalid is_admin in token")
+		// }
 
 		authUser := AuthUser {
-			uidUUID,
-			email,
-			isAdmin,
+			ID: uidUUID,
+			email: email,
 		}	
 
 		ctx = context.WithValue(ctx, userContextKey, authUser)

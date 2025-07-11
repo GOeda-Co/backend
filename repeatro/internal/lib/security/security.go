@@ -13,7 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	grpcsso "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
+	grpcsso "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -21,8 +21,7 @@ import (
 )
 
 type contextKey string
-
-const UserContextKey contextKey = "authUser"
+const userContextKey contextKey = "authUser"
 
 func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	userClaims, exists := ctx.Get("userClaims")
@@ -49,10 +48,11 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 }
 
 type AuthUser struct {
-	ID      uuid.UUID
-	email   string
+	ID uuid.UUID
+	email string
 	IsAdmin bool
 }
+
 
 type Security struct {
 	PrivateKey      string
@@ -104,6 +104,9 @@ func (s *Security) AuthMiddleware() gin.HandlerFunc {
 		}
 
 		c.Set("userClaims", claims)
+		c.Set("token", tokenString)
+		c.Set("authorization", "Bearer "+tokenString)
+		fmt.Println("token", tokenString)
 		c.Next()
 	}
 }
@@ -143,12 +146,11 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 		}
 		token := strings.TrimPrefix(authHeaders[0], "Bearer ")
 		jwtClaimsMap, err := s.validateToken(token)
-		fmt.Println("UID:", jwtClaimsMap)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid token: %v", err)
 		}
 
-		uid, ok := jwtClaimsMap["uid"].(string)
+		uid, ok := jwtClaimsMap["id"].(string)
 		if !ok || uid == "" {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		}
@@ -158,29 +160,29 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 			return nil, status.Errorf(codes.Internal, "failed during parsing user ID: %v", err)
 		}
 
+
 		email, ok := jwtClaimsMap["email"].(string)
 		if !ok || email == "" {
-			return nil, status.Errorf(codes.Unauthenticated, "invalid email in token")
+			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		}
 
-		// isAdmin, ok := jwtClaimsMap["is_admin"].(bool)
-		// if !ok {
-		// 	return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
-		// }
+		isAdmin, ok := jwtClaimsMap["is_admin"].(bool)
+		if !ok {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
+		}
 
-		authUser := AuthUser{
+		authUser := AuthUser {
 			uidUUID,
 			email,
-			false,
-		}
+			isAdmin,
+		}	
 
-		ctx = context.WithValue(ctx, UserContextKey, authUser)
-
-		fmt.Println("UID:", ctx.Value(UserContextKey))
+		ctx = context.WithValue(ctx, userContextKey, authUser)
 
 		return handler(ctx, req)
 	}
 }
+
 
 // func New(
 //     log *slog.Logger,
