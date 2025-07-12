@@ -19,7 +19,7 @@ import (
 )
 
 type UserStorage interface {
-	SaveUser(ctx context.Context, email string, hashPass []byte) (uid uuid.UUID, err error)
+	SaveUser(ctx context.Context, email string, hashPass []byte, name string) (uid uuid.UUID, err error)
 	User(ctx context.Context, email string) (models.User, error)
 	IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error)
 }
@@ -50,12 +50,13 @@ func New(
 	}
 }
 
-func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (uuid.UUID, error) {
+func (a *Auth) RegisterNewUser(ctx context.Context, email, pass, name string) (uuid.UUID, error) {
 	const op = "Auth.RegisterNewUser" //operation name for convenient logging
 
 	log := a.log.With(
 		slog.String("op", op),
 		slog.String("email", email),
+		slog.String("name", name),
 	)
 
 	log.Info("registering user")
@@ -67,7 +68,7 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (
 		return uuid.UUID{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	id, err := a.usrStorage.SaveUser(ctx, email, passHash)
+	id, err := a.usrStorage.SaveUser(ctx, email, passHash, name)
 	if err != nil {
 		log.Error("failed to write user to storage", sl.Err(err))
 		return uuid.UUID{}, fmt.Errorf("%s: %w", op, err)

@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/google/uuid"
-	ssov1 "github.com/tomatoCoderq/proto-contract/gen/go/sso"
+	ssov1 "github.com/GOeda-Co/proto-contract/gen/go/sso"
 	//use protos package
 )
 
@@ -33,6 +33,7 @@ type Auth interface {
 		ctx context.Context,
 		email string,
 		password string,
+		name string,
 	) (userID uuid.UUID, err error)
 	IsAdmin(
 		ctx context.Context,
@@ -85,7 +86,11 @@ func (s *serverAPI) Register(
 		return nil, status.Error(codes.InvalidArgument, "password is required")
 	}
 
-	uid, err := s.auth.RegisterNewUser(ctx, in.GetEmail(), in.GetPassword())
+	if in.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "name is required")
+	}
+
+	uid, err := s.auth.RegisterNewUser(ctx, in.Email, in.Password, in.Name)
 	if err != nil {
 		// Ошибку storage.ErrUserExists мы создадим ниже
 		if errors.Is(err, storage.ErrUserExists) {
