@@ -12,8 +12,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/google/uuid"
 	ssov1 "github.com/GOeda-Co/proto-contract/gen/go/sso"
+	"github.com/google/uuid"
 	//use protos package
 )
 

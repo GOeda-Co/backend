@@ -3,7 +3,7 @@ module sso
 go 1.24.0
 
 require (
-	github.com/GOeda-Co/proto-contract v0.0.0-20250712203442-c64146087247
+	github.com/GOeda-Co/proto-contract v0.3.2
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2

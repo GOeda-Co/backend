@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	_ "github.com/swaggo/swag/example/celler/httputil"
 	"github.com/google/uuid"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
@@ -30,16 +31,33 @@ func New(ssoClient *ssoClient.Client, cardClient *cardClient.Client, deckClient 
 	}
 }
 
+// Register godoc
+//	@Summary		Registers new user to the system
+//	@Description	Register by email, name, and password, getting user_id
+//	@Tags			sso
+//	@Accept			json
+//	@Produce		json
+//	@Param			name		body		string	true	"Name of user"
+//	@Param			email		body		string	true	"Email of user"
+//	@Param			password	body		string	true	"Password of user (> 6 letters)"
+//	@Success		200			{object}	map[string]interface{}
+//	@Failure		400			{object}	map[string]string
+//	@Failure		500			{object}	map[string]string
+//	@Router			/register [post]
 func (c *Controller) Register(ctx *gin.Context) {
 	var registerScheme schemes.RegisterScheme
 
 	if err := ctx.ShouldBindBodyWithJSON(&registerScheme); err != nil {
-		ctx.JSON(400, gin.H{"error": "Invalid request body"})
+		fmt.Println("HERE")
+		ctx.JSON(400, gin.H{"error": fmt.Sprintf("Invalid request body: %v", err)})
 	}
 
-	uid, err := c.ssoClient.Register(ctx.Request.Context(), registerScheme.Email, registerScheme.Password)
+	fmt.Println(registerScheme)
+
+	uid, err := c.ssoClient.Register(ctx.Request.Context(), registerScheme.Email, registerScheme.Password, registerScheme.Name)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": "Failed to register user"})
+		fmt.Println("Err", err)
+		ctx.JSON(500, gin.H{"error": fmt.Sprintf("Failed to register user: %v", err)})
 		return
 	}
 	ctx.JSON(200, gin.H{
@@ -48,6 +66,19 @@ func (c *Controller) Register(ctx *gin.Context) {
 	})
 }
 
+// Login godoc
+//	@Summary		Logs in a user
+//	@Description	Logs in a user and returns a JWT token
+//	@Tags			sso
+//	@Accept			json
+//	@Produce		json
+//	@Param			email		body		string	true	"Email of user"
+//	@Param			password	body		string	true	"Password of user"
+//	@Param			app_id		body		int		true	"Application ID"
+//	@Success		200			{object}	map[string]interface{}
+//	@Failure		400			{object}	map[string]string
+//	@Failure		500			{object}	map[string]string
+//	@Router			/login [post]
 func (c *Controller) Login(ctx *gin.Context) {
 	var loginScheme schemes.LoginScheme
 
@@ -57,7 +88,7 @@ func (c *Controller) Login(ctx *gin.Context) {
 
 	token, err := c.ssoClient.Login(ctx.Request.Context(), loginScheme.Email, loginScheme.Password, loginScheme.AppId)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": "Failed to login user"})
+		ctx.JSON(500, gin.H{"error": fmt.Sprintf("Failed to login user: %v", err)})
 		return
 	}
 	ctx.JSON(200, gin.H{
@@ -131,6 +162,16 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	return userId, nil
 }
 
+// AddCard godoc
+//	@Summary		Add a card
+//	@Description	Add a new card for the authenticated user
+//	@Tags			cards
+//	@Accept			json
+//	@Produce		json
+//	@Param			card	body		model.Card	true	"Card to add"
+//	@Success		200		{object}	model.Card
+//	@Failure		500		{object}	map[string]string
+//	@Router			/card [post]
 func (cc *Controller) AddCard(ctx *gin.Context) {
 	body, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {
@@ -161,6 +202,14 @@ func (cc *Controller) AddCard(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// ReadAllCardsToLearn godoc
+//	@Summary		Get all cards to learn
+//	@Description	Retrieves all cards assigned to the user for learning
+//	@Tags			cards
+//	@Produce		json
+//	@Success		200	{array}		model.Card
+//	@Failure		500	{object}	map[string]string
+//	@Router			/cards [get]
 func (cc *Controller) ReadAllCardsToLearn(ctx *gin.Context) {
 	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
@@ -176,6 +225,17 @@ func (cc *Controller) ReadAllCardsToLearn(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// UpdateCard godoc
+//	@Summary		Update a card
+//	@Description	Update a card's content by ID
+//	@Tags			cards
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string						true	"Card ID"
+//	@Param			card	body		schemes.UpdateCardScheme	true	"Updated card data"
+//	@Success		200		{object}	model.Card
+//	@Failure		400		{object}	map[string]string
+//	@Router			/card/{id} [put]
 func (cc *Controller) UpdateCard(ctx *gin.Context) {
 	cardId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -206,6 +266,14 @@ func (cc *Controller) UpdateCard(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, card)
 }
 
+// DeleteCard godoc
+//	@Summary		Delete a card
+//	@Description	Delete a card by ID
+//	@Tags			cards
+//	@Param			id	path	string	true	"Card ID"
+//	@Success		200
+//	@Failure		400	{object}	map[string]string
+//	@Router			/card/{id} [delete]
 func (cc *Controller) DeleteCard(ctx *gin.Context) {
 	cardId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -227,6 +295,17 @@ func (cc *Controller) DeleteCard(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// AddAnswers godoc
+//	@Summary		Submit answers
+//	@Description	Submit answers to cards
+//	@Tags			answers
+//	@Accept			json
+//	@Produce		json
+//	@Param			answers	body		[]schemes.AnswerScheme	true	"List of answers"
+//	@Success		200		{object}	map[string]string
+//	@Failure		400		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Router			/answers [post]
 func (cc *Controller) AddAnswers(ctx *gin.Context) {
 	var answers []*schemes.AnswerScheme
 
@@ -248,7 +327,17 @@ func (cc *Controller) AddAnswers(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{"message": "added answers succesfully "})
 }
 
-// Deck-related handlers
+// AddDeck godoc
+//	@Summary		Add a deck
+//	@Description	Create a new deck
+//	@Tags			decks
+//	@Accept			json
+//	@Produce		json
+//	@Param			deck	body		model.Deck	true	"Deck to add"
+//	@Success		200		{object}	model.Deck
+//	@Failure		400		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Router			/deck [post]
 func (cc *Controller) AddDeck(ctx *gin.Context) {
 	var deck model.Deck
 	if err := ctx.ShouldBindJSON(&deck); err != nil {
@@ -273,6 +362,14 @@ func (cc *Controller) AddDeck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// ReadAllDecks godoc
+//	@Summary		Get all decks
+//	@Description	Retrieves all decks in the system
+//	@Tags			decks
+//	@Produce		json
+//	@Success		200	{array}		model.Deck
+//	@Failure		500	{object}	map[string]string
+//	@Router			/decks [get]
 func (cc *Controller) ReadAllDecks(ctx *gin.Context) {
 	response, err := cc.deckClient.ReadAllDecks(ctx)
 	if err != nil {
@@ -282,6 +379,15 @@ func (cc *Controller) ReadAllDecks(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// ReadDeck godoc
+//	@Summary		Get deck by ID
+//	@Description	Retrieves a deck by its ID
+//	@Tags			decks
+//	@Param			id	path		string	true	"Deck ID"
+//	@Success		200	{object}	model.Deck
+//	@Failure		400	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Router			/deck/{id} [get]
 func (cc *Controller) ReadDeck(ctx *gin.Context) {
 	deckId := ctx.Param("id")
 
@@ -299,6 +405,15 @@ func (cc *Controller) ReadDeck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// DeleteDeck godoc
+//	@Summary		Delete a deck
+//	@Description	Delete a deck by ID
+//	@Tags			decks
+//	@Param			id	path	string	true	"Deck ID"
+//	@Success		200
+//	@Failure		400	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Router			/deck/{id} [delete]
 func (cc *Controller) DeleteDeck(ctx *gin.Context) {
 	deckId := ctx.Param("id")
 
@@ -316,13 +431,23 @@ func (cc *Controller) DeleteDeck(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// AddCardToDeck godoc
+//	@Summary		Add card to deck
+//	@Description	Add a card to a specific deck
+//	@Tags			decks
+//	@Param			card_id	path	string	true	"Card ID"
+//	@Param			deck_id	path	string	true	"Deck ID"
+//	@Success		200
+//	@Failure		400	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Router			/deck/{deck_id}/card/{card_id} [post]
 func (cc *Controller) AddCardToDeck(ctx *gin.Context) {
 	cid, err := uuid.Parse(ctx.Param("card_id"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid card ID"})
 		return
 	}
- 
+
 	did, err := uuid.Parse(ctx.Param("deck_id"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid deck ID"})
@@ -335,7 +460,6 @@ func (cc *Controller) AddCardToDeck(ctx *gin.Context) {
 	// 	return
 	// }
 
-
 	err = cc.deckClient.AddCardToDeck(ctx, did, cid)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add card to deck"})
@@ -344,6 +468,15 @@ func (cc *Controller) AddCardToDeck(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// ReadCardsFromDeck godoc
+//	@Summary		Get cards from deck
+//	@Description	Retrieve all cards from a specific deck
+//	@Tags			decks
+//	@Param			id	path		string	true	"Deck ID"
+//	@Success		200	{array}		model.Card
+//	@Failure		400	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Router			/deck/{id}/cards [get]
 func (cc *Controller) ReadCardsFromDeck(ctx *gin.Context) {
 	did, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -358,8 +491,6 @@ func (cc *Controller) ReadCardsFromDeck(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, response)
 }
-
-
 
 // add card
 // add deck

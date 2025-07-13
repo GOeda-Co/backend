@@ -10,13 +10,6 @@ import (
 
 // NOTE: I don't use rn gorm.Model due to redundancy of some fields
 
-type User struct {
-	UserId           uuid.UUID `json:"user_id" bson:"user_id"`
-	Email            string    `json:"email" bson:"email"`
-	HashedPassword   string    `json:"hashed_password" bson:"hashed_password"`
-	RegistrationDate time.Time `json:"registration_date" bson:"registration_date"`
-}
-
 type Card struct {
 	CardId           uuid.UUID      `gorm:"type:uuid;primaryKey;" json:"card_id"`
 	CreatedBy        uuid.UUID      `gorm:"references:UserId;constraint:OnDelete:CASCADE;" json:"created_by"`

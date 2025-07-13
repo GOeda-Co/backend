@@ -3,16 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
-	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
-	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
-	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
-	"github.com/tomatoCoderq/repeatro/internal/config"
-	"github.com/tomatoCoderq/repeatro/internal/lib/security"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/tomatoCoderq/repeatro/docs"
+	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
+	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
+	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
+	"github.com/tomatoCoderq/repeatro/internal/config"
+	"github.com/tomatoCoderq/repeatro/internal/lib/security"
 
 	app "github.com/tomatoCoderq/repeatro/internal/app"
 )
@@ -24,6 +26,8 @@ const (
 )
 
 func main() {
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+
 	cfg := config.MustLoad()
 
 	log := setupLogger(cfg.Env)

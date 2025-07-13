@@ -68,12 +68,13 @@ func InterceptorLogger(l *slog.Logger) grpclog.Logger {
 	})
 }
 
-func (c *Client) Register(ctx context.Context, email string, password string) (string, error) {
+func (c *Client) Register(ctx context.Context, email string, password string, name string) (string, error) {
 	const op = "grpc.Login"
 
 	resp, err := c.api.Register(ctx, &ssov1.RegisterRequest{
 		Email:    email,
 		Password: password,
+		Name: name,
 	})
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)

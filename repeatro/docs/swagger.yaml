@@ -1,0 +1,502 @@
+basePath: /
+definitions:
+  github_com_tomatoCoderq_repeatro_pkg_models.Card:
+    properties:
+      card_id:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      deck_id:
+        type: string
+      easiness:
+        type: number
+      expires_at:
+        type: string
+      interval:
+        type: integer
+      repetition_number:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      translation:
+        type: string
+      updated_at:
+        type: string
+      word:
+        type: string
+    type: object
+  github_com_tomatoCoderq_repeatro_pkg_models.Deck:
+    properties:
+      cards:
+        description: CardsQuantity uint          `gorm:"type:int unsigned;default=0"
+          json:"cards_quantity"`
+        items:
+          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+        type: array
+      created_at:
+        type: string
+      created_by:
+        type: string
+      deck_id:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  github_com_tomatoCoderq_repeatro_pkg_schemes.AnswerScheme:
+    properties:
+      card_id:
+        type: string
+      grade:
+        type: integer
+    type: object
+  github_com_tomatoCoderq_repeatro_pkg_schemes.UpdateCardScheme:
+    properties:
+      easiness:
+        type: number
+      expires_at:
+        type: string
+      interval:
+        type: integer
+      repetition_number:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      translation:
+        type: string
+      updated_at:
+        type: string
+      word:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: xasanFN@mail.ru
+    name: khasan
+    url: https://t.me/tomatocoder
+  description: Repeatro Swagger describes all endpoints.
+  title: Repeatro
+  version: "1.0"
+paths:
+  /answers:
+    post:
+      consumes:
+      - application/json
+      description: Submit answers to cards
+      parameters:
+      - description: List of answers
+        in: body
+        name: answers
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.AnswerScheme'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Submit answers
+      tags:
+      - answers
+  /card:
+    post:
+      consumes:
+      - application/json
+      description: Add a new card for the authenticated user
+      parameters:
+      - description: Card to add
+        in: body
+        name: card
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a card
+      tags:
+      - cards
+  /card/{id}:
+    delete:
+      description: Delete a card by ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a card
+      tags:
+      - cards
+    put:
+      consumes:
+      - application/json
+      description: Update a card's content by ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated card data
+        in: body
+        name: card
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.UpdateCardScheme'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a card
+      tags:
+      - cards
+  /cards:
+    get:
+      description: Retrieves all cards assigned to the user for learning
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all cards to learn
+      tags:
+      - cards
+  /deck:
+    post:
+      consumes:
+      - application/json
+      description: Create a new deck
+      parameters:
+      - description: Deck to add
+        in: body
+        name: deck
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a deck
+      tags:
+      - decks
+  /deck/{deck_id}/card/{card_id}:
+    post:
+      description: Add a card to a specific deck
+      parameters:
+      - description: Card ID
+        in: path
+        name: card_id
+        required: true
+        type: string
+      - description: Deck ID
+        in: path
+        name: deck_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add card to deck
+      tags:
+      - decks
+  /deck/{id}:
+    delete:
+      description: Delete a deck by ID
+      parameters:
+      - description: Deck ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a deck
+      tags:
+      - decks
+    get:
+      description: Retrieves a deck by its ID
+      parameters:
+      - description: Deck ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get deck by ID
+      tags:
+      - decks
+  /deck/{id}/cards:
+    get:
+      description: Retrieve all cards from a specific deck
+      parameters:
+      - description: Deck ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cards from deck
+      tags:
+      - decks
+  /decks:
+    get:
+      description: Retrieves all decks in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all decks
+      tags:
+      - decks
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user and returns a JWT token
+      parameters:
+      - description: Email of user
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: Password of user
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      - description: Application ID
+        in: body
+        name: app_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Logs in a user
+      tags:
+      - sso
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register by email, name, and password, getting user_id
+      parameters:
+      - description: Name of user
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Email of user
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: Password of user (> 6 letters)
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Registers new user to the system
+      tags:
+      - sso
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

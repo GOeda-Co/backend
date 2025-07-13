@@ -1,3 +1,18 @@
+//	@title			Repeatro
+//	@version		1.0
+//	@description	Repeatro Swagger describes all endpoints.
+
+//	@host		localhost:8080
+//	@BasePath	/
+
+// @contact.name	khasan
+// @contact.email	xasanFN@mail.ru
+// @contact.url	https://t.me/tomatocoder
+
+//	@securityDefinitions.basic	BasicAuth
+
+//	@externalDocs.description	OpenAPI
+//	@externalDocs.url			https://swagger.io/resources/open-api/
 package app
 
 import (
@@ -5,13 +20,18 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
+	"github.com/swaggo/files"       // swagger embed files
+	"github.com/swaggo/gin-swagger" // gin-swagger middleware
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
+	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
 	httpRepeatro "github.com/tomatoCoderq/repeatro/internal/controller/http"
 	"github.com/tomatoCoderq/repeatro/internal/lib/security"
+	_ "github.com/tomatoCoderq/repeatro/pkg/models"
 )
 
 type App struct {
@@ -30,7 +50,17 @@ func New(
 	security security.Security,
 ) *App {
 	router := gin.Default()
-	router.Use(gin.Recovery())
+	router.Use(gin.Recovery(), cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // adjust for your frontend
+		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 
 	ctrl := httpRepeatro.New(ssoClient, cardClient, deckClient)
 	router.Handle(http.MethodPost, "/register", ctrl.Register)
