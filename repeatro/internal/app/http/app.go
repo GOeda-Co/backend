@@ -53,7 +53,7 @@ func New(
 	router.Use(gin.Recovery(), cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // adjust for your frontend
 		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
@@ -72,7 +72,8 @@ func New(
 	cards.Use(security.AuthMiddleware())
 
 	cards.Handle(http.MethodPost, "", ctrl.AddCard)
-	cards.Handle(http.MethodGet, "", ctrl.ReadAllCardsToLearn)
+	cards.Handle(http.MethodGet, "/learn", ctrl.ReadAllCardsToLearn)
+	cards.Handle(http.MethodGet, "", ctrl.ReadAllCardsByUser)
 	cards.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
 	cards.Handle(http.MethodDelete, "/:id", ctrl.DeleteCard)
 	cards.Handle(http.MethodPost, "/answers", ctrl.AddAnswers)

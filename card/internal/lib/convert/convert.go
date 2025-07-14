@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/card/pkg/model"
 	schemes "github.com/tomatoCoderq/card/pkg/scheme"
-	cardv1 "github.com/tomatoCoderq/proto-contract/gen/go/card"
+	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

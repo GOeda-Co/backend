@@ -2,17 +2,34 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/card/internal/controller"
 	"github.com/tomatoCoderq/card/internal/lib/convert"
+	"github.com/tomatoCoderq/card/internal/lib/security"
 	schemes "github.com/tomatoCoderq/card/pkg/scheme"
-	cardv1 "github.com/tomatoCoderq/proto-contract/gen/go/card"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+func GetAuthUser(ctx context.Context) (*security.AuthUser, error) {
+	val := ctx.Value(security.UserContextKey)
+	if val == nil {
+		return nil, errors.New("no user in context")
+	}
+
+	authUser, ok := val.(security.AuthUser)
+	if !ok {
+		return nil, errors.New("invalid user type in context")
+	}
+
+	return &authUser, nil
+}
+
 
 type ServerAPI struct {
 	cardv1.UnimplementedCardServiceServer
@@ -63,6 +80,25 @@ func (s *ServerAPI) ReadAllCards(ctx context.Context, in *cardv1.ReadAllCardsReq
 	return &cardv1.ReadAllCardsResponse{Cards: protoCards}, nil
 }
 
+func (s *ServerAPI) ReadAllCardsByUser(ctx context.Context, in *cardv1.ReadAllCardsByUserRequest) (*cardv1.ReadAllCardsByUserResponse, error) {
+	userId, err := uuid.Parse(in.UserId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Invalid user ID")
+	}
+
+	cards, err := s.service.ReadAllCardsByUser(userId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to read cards")
+	}
+
+	var protoCards []*cardv1.Card
+	for _, card := range cards {
+		protoCards = append(protoCards, convert.ModelToProto(&card))
+	}
+
+	return &cardv1.ReadAllCardsByUserResponse{Cards: protoCards}, nil
+}
+
 func (s *ServerAPI) UpdateCard(ctx context.Context, in *cardv1.UpdateCardRequest) (*cardv1.UpdateCardResponse, error) {
 	cardId, err := uuid.Parse(in.CardId)
 	if err != nil {
@@ -105,11 +141,6 @@ func (s *ServerAPI) DeleteCard(ctx context.Context, in *cardv1.DeleteCardRequest
 }
 
 func (s *ServerAPI) AddAnswers(ctx context.Context, in *cardv1.AddAnswersRequest) (*cardv1.AddAnswersResponse, error) {
-	userId, err := uuid.Parse(in.UserId)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "Invalid user ID")
-	}
-
 	var answers []schemes.AnswerScheme
 
 	for _, answer := range in.Answers {
@@ -127,8 +158,12 @@ func (s *ServerAPI) AddAnswers(ctx context.Context, in *cardv1.AddAnswersRequest
 		answers = append(answers, *answerConverted)
 	}
 	
+	authUser, err := GetAuthUser(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to auth user")
+	}
 
-	err = s.service.AddAnswers(userId, answers)
+	err = s.service.AddAnswers(authUser.ID, answers)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to add answers")
 	}

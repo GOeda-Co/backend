@@ -1,10 +1,6 @@
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
-github.com/GOeda-Co/proto-contract v0.0.0-20250711084306-146867919bf3 h1:8ZpUP+gidGtS9t7Qeis0kqgAMy3aDmLa2Uc/Ay6KASE=
-github.com/GOeda-Co/proto-contract v0.0.0-20250711084306-146867919bf3/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
-github.com/GOeda-Co/proto-contract v0.0.0-20250712203442-c64146087247 h1:mYacjVoM/n0lQPPgPfkle81cPZV/YPgoogs0yhOagWw=
-github.com/GOeda-Co/proto-contract v0.0.0-20250712203442-c64146087247/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
 github.com/GOeda-Co/proto-contract v0.3.2 h1:XJg0PavmWpszPwwv/4G5sLtquWkt60TPHnrKGudKex8=
 github.com/GOeda-Co/proto-contract v0.3.2/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
