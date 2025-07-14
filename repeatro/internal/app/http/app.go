@@ -53,7 +53,7 @@ func New(
 	router.Use(gin.Recovery(), cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // adjust for your frontend
 		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,

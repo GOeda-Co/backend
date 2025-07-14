@@ -70,7 +70,6 @@ type AppProvider interface {
 
 func (s *Storage) SaveUser(ctx context.Context, email string, hashPass []byte, name string) (uid uuid.UUID, err error) {
 	const op = "Storage.postgresql.SaveUser"
-	//TODO: Cancel out this to service layer
 	user := models.User{
 		Email:    email,
 		PassHash: hashPass,
