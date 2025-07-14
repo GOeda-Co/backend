@@ -20,6 +20,8 @@ type Deck struct {
 }
 
 func (d *Deck) BeforeCreate(tx *gorm.DB) error {
-	d.DeckId = uuid.New()
+	if d.DeckId == uuid.Nil {
+		d.DeckId = uuid.New()
+	}
 	return nil
 }

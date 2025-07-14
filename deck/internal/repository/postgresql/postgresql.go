@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	// "fmt"
 	"log/slog"
 
 	models "github.com/tomatoCoderq/deck/pkg/model"
@@ -9,7 +10,6 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	
 )
 
 type Repository struct {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os/signal"
 	"syscall"
 	"time"
@@ -51,8 +50,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(ssoClient)
 
 	security := security.Security{
 		PrivateKey:      cfg.Secret,
