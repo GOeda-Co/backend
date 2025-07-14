@@ -16,7 +16,7 @@ import (
 )
 
 type Storage struct {
-	db *gorm.DB
+	DB *gorm.DB
 }
 
 func New(connString string, log *slog.Logger) (*Storage, error) {
@@ -26,14 +26,14 @@ func New(connString string, log *slog.Logger) (*Storage, error) {
 		retryDelay = 4 * time.Second
 	)
 
-	var db *gorm.DB
+	var DB *gorm.DB
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		db, err = gorm.Open(postgres.Open(connString), &gorm.Config{})
+		DB, err = gorm.Open(postgres.Open(connString), &gorm.Config{})
 		if err == nil {
 			// Try pinging to ensure DB is really ready
-			sqlDB, errPing := db.DB()
+			sqlDB, errPing := DB.DB()
 			if errPing == nil && sqlDB.Ping() == nil {
 				break // success
 			}
@@ -48,11 +48,11 @@ func New(connString string, log *slog.Logger) (*Storage, error) {
 	}
 
 	// AutoMigrate your models
-	if err := db.AutoMigrate(&models.User{}, &models.App{}); err != nil {
+	if err := DB.AutoMigrate(&models.User{}, &models.App{}); err != nil {
 		return nil, fmt.Errorf("%s: migration error: %w", op, err)
 	}
 
-	return &Storage{db: db}, nil
+	return &Storage{DB: DB}, nil
 }
 
 /*
@@ -76,28 +76,28 @@ func (s *Storage) SaveUser(ctx context.Context, email string, hashPass []byte, n
 		PassHash: hashPass,
 		Name: name,
 	}
-	err = s.db.Create(&user).Error
+	err = s.DB.Create(&user).Error
 	return user.ID, err
 }
 
 func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 	const op = "Storage.postgresql.User"
 	var user models.User
-	err := s.db.Where("email = ?", email).Find(&user).Error
+	err := s.DB.Where("email = ?", email).Find(&user).Error
 	return user, err
 }
 
 func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
 	const op = "Storage.postgresql.App"
 	var app models.App
-	err := s.db.Where("ID = ?", appID).Find(&app).Error
+	err := s.DB.Where("ID = ?", appID).Find(&app).Error
 	return app, err
 }
 
 func (s *Storage) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 	const op = "Storage.postgresql.IsAdmin"
 	var user models.User
-	err := s.db.WithContext(ctx).First(&user, "ID = ?", userID).Error
+	err := s.DB.WithContext(ctx).First(&user, "ID = ?", userID).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, fmt.Errorf("%s: %v", op, storage.ErrUserNotFound)

@@ -1,10 +1,6 @@
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
-github.com/GOeda-Co/proto-contract v0.0.0-20250711084306-146867919bf3 h1:8ZpUP+gidGtS9t7Qeis0kqgAMy3aDmLa2Uc/Ay6KASE=
-github.com/GOeda-Co/proto-contract v0.0.0-20250711084306-146867919bf3/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
-github.com/GOeda-Co/proto-contract v0.0.0-20250712203442-c64146087247 h1:mYacjVoM/n0lQPPgPfkle81cPZV/YPgoogs0yhOagWw=
-github.com/GOeda-Co/proto-contract v0.0.0-20250712203442-c64146087247/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
 github.com/GOeda-Co/proto-contract v0.3.2 h1:XJg0PavmWpszPwwv/4G5sLtquWkt60TPHnrKGudKex8=
 github.com/GOeda-Co/proto-contract v0.3.2/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
@@ -50,6 +46,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=
+github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
