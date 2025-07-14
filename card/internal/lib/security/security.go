@@ -21,7 +21,8 @@ import (
 )
 
 type contextKey string
-const userContextKey contextKey = "authUser"
+
+const UserContextKey contextKey = "authUser"
 
 func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	userClaims, exists := ctx.Get("userClaims")
@@ -48,11 +49,10 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 }
 
 type AuthUser struct {
-	ID uuid.UUID
-	email string
+	ID      uuid.UUID
+	email   string
 	IsAdmin bool
 }
-
 
 type Security struct {
 	PrivateKey      string
@@ -143,12 +143,12 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 		}
 		token := strings.TrimPrefix(authHeaders[0], "Bearer ")
 		jwtClaimsMap, err := s.validateToken(token)
+		fmt.Println("UID:", jwtClaimsMap)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid token: %v", err)
 		}
 
-		uid, ok := jwtClaimsMap["id"].(string)
-		// fmt.Println("JWTCLAIMs", jwtClaimsMap["id"].(string))
+		uid, ok := jwtClaimsMap["uid"].(string)
 		if !ok || uid == "" {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		}
@@ -158,7 +158,6 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 			return nil, status.Errorf(codes.Internal, "failed during parsing user ID: %v", err)
 		}
 
-
 		email, ok := jwtClaimsMap["email"].(string)
 		if !ok || email == "" {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid email in token")
@@ -166,20 +165,22 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 
 		// isAdmin, ok := jwtClaimsMap["is_admin"].(bool)
 		// if !ok {
-		// 	return nil, status.Errorf(codes.Unauthenticated, "invalid is_admin in token")
+		// 	return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		// }
 
-		authUser := AuthUser {
-			ID: uidUUID,
-			email: email,
-		}	
+		authUser := AuthUser{
+			uidUUID,
+			email,
+			false,
+		}
 
-		ctx = context.WithValue(ctx, userContextKey, authUser)
+		ctx = context.WithValue(ctx, UserContextKey, authUser)
+
+		fmt.Println("UID:", ctx.Value(UserContextKey))
 
 		return handler(ctx, req)
 	}
 }
-
 
 // func New(
 //     log *slog.Logger,

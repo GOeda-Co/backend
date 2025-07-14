@@ -225,6 +225,30 @@ func (cc *Controller) ReadAllCardsToLearn(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+
+// ReadAllCardsToLearn godoc
+//	@Summary		Get all cards to learn
+//	@Description	Retrieves all cards that he/she has created before
+//	@Tags			cards
+//	@Produce		json
+//	@Success		200	{array}		model.Card
+//	@Failure		500	{object}	map[string]string
+//	@Router			/cards [get]
+func (cc *Controller) ReadAllCardsByUser(ctx *gin.Context) {
+	userId, err := GetUserIdFromContext(ctx)
+	if err != nil {
+		fmt.Println("USS", userId)
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	response, err := cc.cardClient.ReadAllCardsByUser(ctx, userId)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, response)
+}
+
 // UpdateCard godoc
 //	@Summary		Update a card
 //	@Description	Update a card's content by ID
