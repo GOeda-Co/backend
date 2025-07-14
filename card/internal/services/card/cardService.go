@@ -16,6 +16,7 @@ import (
 type CardRepository interface {
 	AddCard(card *model.Card) error
 	ReadAllCards(userId uuid.UUID) ([]model.Card, error)
+	ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error)
 	ReadCard(cardId uuid.UUID) (*model.Card, error)
 	PureUpdate(card *model.Card) error
 	UpdateCard(card *model.Card, cardUpdate *schemes.UpdateCardScheme) (*model.Card, error)
@@ -47,6 +48,14 @@ func (cs Card) AddCard(card *model.Card) (*model.Card, error) {
 
 func (cm Card) ReadAllCards(userId uuid.UUID) ([]model.Card, error) {
 	cards, err := cm.cardRepository.ReadAllCards(userId)
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
+func (cm Card) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) {
+	cards, err := cm.cardRepository.ReadAllCardsByUser(userId)
 	if err != nil {
 		return nil, err
 	}

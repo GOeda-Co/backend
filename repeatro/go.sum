@@ -6,6 +6,8 @@ github.com/GOeda-Co/proto-contract v0.0.0-20250709205439-d1774bd838fb h1:uMcVL2i
 github.com/GOeda-Co/proto-contract v0.0.0-20250709205439-d1774bd838fb/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
 github.com/GOeda-Co/proto-contract v0.3.2 h1:XJg0PavmWpszPwwv/4G5sLtquWkt60TPHnrKGudKex8=
 github.com/GOeda-Co/proto-contract v0.3.2/go.mod h1:pIGVetD/D5zadMcdaPrBAn8yCjjvLAKIKqhHHu2r9oc=
+github.com/GOeda-Co/proto-contract v0.3.5 h1:T8OwyuHSaLMw0pgBfrsiVn4TvF18C2nBXfUOmEyvbdc=
+github.com/GOeda-Co/proto-contract v0.3.5/go.mod h1:ZikY0Urs+uK1EpphexX+3QpRKeiOcAZ186KeDOWFBQQ=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
 github.com/PuerkitoBio/purell v1.1.1 h1:WEQqlqaGbrPkxLJWfBwQmfEAE1Z7ONdDLqrN38tNFfI=

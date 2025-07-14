@@ -109,6 +109,26 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card,
 	return cards, nil
 }
 
+func (c *Client) ReadAllCardsByUser(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
+	const op = "grpc.ReadAllCards"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+
+	resp, err := c.api.ReadAllCardsByUser(ctx, &cardv1.ReadAllCardsByUserRequest{UserId: uid.String()})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	cards := make([]model.Card, 0, len(resp.Cards))
+	for _, protoCard := range resp.Cards {
+		card, err := convert.ProtoToModel(protoCard)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		cards = append(cards, *card)
+	}
+	return cards, nil
+}
+
 func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, card *schemes.UpdateCardScheme) (model.Card, error) {
 	const op = "grpc.UpdateCard"
 

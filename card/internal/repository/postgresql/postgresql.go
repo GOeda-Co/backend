@@ -65,6 +65,18 @@ func (cr Repository) ReadAllCards(userId uuid.UUID) ([]model.Card, error) {
 	return cards, err
 }
 
+func (cr Repository) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) {
+	var cards []model.Card
+	err := cr.db.
+		Where("created_by = ?", userId).
+		Find(&cards).
+		Error
+	if err != nil {
+		return nil, err
+	}
+	return cards, err
+}
+
 func (cr Repository) ReadCard(cardId uuid.UUID) (*model.Card, error) {
 	var card model.Card
 	err := cr.db.Where("card_id = ?", cardId).Find(&card).Error
