@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+_	"fmt"
 	"log/slog"
 	"time"
 
@@ -45,6 +46,7 @@ func New(connectionString string, log *slog.Logger) *Repository {
 	db, err := gorm.Open(postgres.Open(connectionString))
 	if err != nil {
 		log.Error("Error during opening database")
+		return nil
 	}
 
 	db.AutoMigrate(&model.Card{})
@@ -58,7 +60,10 @@ func (cr Repository) AddCard(card *model.Card) error {
 
 func (cr Repository) ReadAllCards(userId uuid.UUID) ([]model.Card, error) {
 	var cards []model.Card
-	err := cr.db.Where("expires_at < ?", time.Now()).Where("created_by = ?", userId).Find(&cards).Error
+	err := cr.db.
+		Where("expires_at < ?", time.Now()).
+		Where("created_by = ?", userId).
+		Find(&cards).Error
 	if err != nil {
 		return nil, err
 	}
