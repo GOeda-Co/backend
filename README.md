@@ -11,17 +11,17 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/tomatoCoderq/repeatro">
+  <a href="https://github.com/GOeda-Co/backend">
     <img src="https://avatars.githubusercontent.com/u/215998499?s=48&v=4" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">Repeatro – Anki-Style Vocabulary Learning App</h3>
   <p align="center">
     A modern web-based vocabulary learning tool inspired by Anki, built with Go and PostgreSQL.<br />
-    <a href="https://github.com/tomatoCoderq/repeatro"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/GOeda-Co/frontend"><strong>Frontend repo »</strong></a>
     <br />
-    <a href="https://github.com/tomatoCoderq/repeatro/issues">Issues</a>
+    <a href="https://github.com/GOeda-Co/backend/issues">Issues</a>
     &middot;
-    <a href="https://github.com/tomatoCoderq/repeatro/pulls">Pull Requests</a>
+    <a href="https://github.com/GOeda-Co/backend/pulls">Pull Requests</a>
   </p>
 </div>
 
@@ -86,7 +86,7 @@ To get a local copy up and running, follow these steps.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/tomatoCoderq/repeatro.git
+   git clone https://github.com/GOeda-Co/backend.git
    cd repeatro
    ```
 2. Install dependencies
@@ -149,9 +149,12 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Maintainer: [@tomatoCoderq](https://github.com/tomatoCoderq)
+Maintainers: <br>
+[@tomatoCoderq](https://github.com/tomatoCoderq) <br>
+[@constable](https://github.com/constable) <br>
+[@Kaghorz](https://github.com/tomatoCoderq)<br>
 
-Project Link: [https://github.com/tomatoCoderq/repeatro](https://github.com/tomatoCoderq/repeatro)
+Project Link: [https://github.com/GOeda-Co/backend](https://github.com/GOeda-Co/backend)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -168,8 +171,8 @@ Project Link: [https://github.com/tomatoCoderq/repeatro](https://github.com/toma
 
 ## Contributors
 
-<a href="https://github.com/tomatoCoderq/repeatro/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tomatoCoderq/repeatro" alt="Contributors" />
+<a href="https://github.com/GOeda-Co/backend/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=GOeda-Co/backend" alt="Contributors" />
 </a>
 
 **Project contributors:**
@@ -180,16 +183,16 @@ Project Link: [https://github.com/tomatoCoderq/repeatro](https://github.com/toma
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/tomatoCoderq/repeatro.svg?style=for-the-badge
-[contributors-url]: https://github.com/tomatoCoderq/repeatro/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/tomatoCoderq/repeatro.svg?style=for-the-badge
-[forks-url]: https://github.com/tomatoCoderq/repeatro/network/members
-[stars-shield]: https://img.shields.io/github/stars/tomatoCoderq/repeatro.svg?style=for-the-badge
-[stars-url]: https://github.com/tomatoCoderq/repeatro/stargazers
-[issues-shield]: https://img.shields.io/github/issues/tomatoCoderq/repeatro.svg?style=for-the-badge
-[issues-url]: https://github.com/tomatoCoderq/repeatro/issues
-[license-shield]: https://img.shields.io/github/license/tomatoCoderq/repeatro.svg?style=for-the-badge
-[license-url]: https://github.com/tomatoCoderq/repeatro/blob/main/LICENSE
+[contributors-shield]: https://img.shields.io/github/contributors/GOeda-Co/backend.svg?style=for-the-badge
+[contributors-url]: https://github.com/GOeda-Co/backend/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/GOeda-Co/backend.svg?style=for-the-badge
+[forks-url]: https://github.com/GOeda-Co/backend/network/members
+[stars-shield]: https://img.shields.io/github/stars/GOeda-Co/backend.svg?style=for-the-badge
+[stars-url]: https://github.com/GOeda-Co/backend/stargazers
+[issues-shield]: https://img.shields.io/github/issues/GOeda-Co/backend.svg?style=for-the-badge
+[issues-url]: https://github.com/GOeda-Co/backend/issues
+[license-shield]: https://img.shields.io/github/license/GOeda-Co/backend.svg?style=for-the-badge
+[license-url]: https://github.com/GOeda-Co/backend/blob/main/LICENSE
 [goose]: https://github.com/pressly/goose
 [swaggo]: https://github.com/swaggo/swag
 [lingua-go]: https://github.com/pemistahl/lingua-go
