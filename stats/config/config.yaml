@@ -1,14 +1,24 @@
 env: dev      # "dev", "prod", "local"
 
+connection_string: >-
+  host=${DB_HOST} 
+  port=${DB_PORT}
+  user=${DB_USER} 
+  password=${DB_PASS}
+  dbname=${DB_NAME} 
+  sslmode=disable
+
 database:
   driver_name: postgres
-  connection_string: >-
-    host=${DB_HOST} port=${DB_PORT}
-    user=${DB_USER} password=${DB_PASS}
-    dbname=${DB_NAME} sslmode=disable
   max_idle_connections: 5
   max_open_connections: 20
   max_lifetime: 60s
+
+clients:
+  sso:
+    address: sso-service:44044
+    timeout: 5s
+    retries_count: 3
 
 grpc:
   address: ":50051"
@@ -29,3 +39,5 @@ auth:
 logger:
   level: info       # debug / info / warn / error
   format: text      # text / json
+
+secret: ${SECRET}

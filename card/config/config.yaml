@@ -14,12 +14,23 @@ database:
   max_open_connections: 20
   max_lifetime: 60s
 
+clients:
+  sso:
+    address: sso-service:44044
+    timeout: 5s
+    retries_count: 3
+
+  stat:
+    address: stat-service:9090
+    timeout: 5s
+    retries_count: 3
+
 grpc:
   address: ":50051"
   timeout: 10s
 
 http:
-  address: ":44044"
+  address: ":8081"
   read_timeout: 5s
   write_timeout: 5s
 
@@ -34,3 +45,5 @@ auth:
 logger:
   level: info
   format: text
+
+secret: ${SECRET}

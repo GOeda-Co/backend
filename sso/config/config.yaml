@@ -34,3 +34,5 @@ auth:
 logger:
   level: info
   format: text
+
+secret: ${SECRET}

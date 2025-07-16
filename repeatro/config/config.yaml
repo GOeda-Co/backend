@@ -1,17 +1,59 @@
-env: "local"
-connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
-http_server:
-  address: "0.0.0.0:8080"
-  portt: 8081
-  timeout: 4s
-  idle_timeout: 30s
+env: dev
+
+connection_string: >-
+  host=${DB_HOST}
+  port=${DB_PORT}
+  user=${DB_USER}
+  password=${DB_PASS}
+  dbname=${DB_NAME}
+  sslmode=disable
+
+database:
+  driver_name: postgres
+  max_idle_connections: 5
+  max_open_connections: 20
+  max_lifetime: 60s
+
 clients:
   sso:
-    address: "localhost:44044"
+    address: sso-service:44044
+    timeout: 5s
+    retries_count: 3
+
   card:
-    address: "localhost:50051"
+    address: card-service:8081
+    timeout: 5s
+    retries_count: 3
+
   deck:
-    address: "localhost:50054"
+    address: deck-service:8082
+    timeout: 5s
+    retries_count: 3
+
   stat:
-    address: "localhost:50055"
-secret: "some very secret secret"
+    address: stat-service:9090
+    timeout: 5s
+    retries_count: 3
+
+grpc:
+  address: ":50051"
+  timeout: 10s
+
+http:
+  address: ":8070"
+  read_timeout: 5s
+  write_timeout: 5s
+
+keys:
+  private_key_file: "config/private.pem"
+  public_key_file:  "config/public.pem"
+
+auth:
+  access_token_ttl: 15m
+  refresh_token_ttl: 24h
+
+logger:
+  level: info
+  format: text
+
+secret: ${SECRET}

@@ -1,14 +1,29 @@
-env: dev      # "dev", "prod", "local"
+env: dev  # "dev", "prod", "local"
+
+connection_string: >-
+  host=${DB_HOST}
+  port=${DB_PORT}
+  user=${DB_USER}
+  password=${DB_PASS}
+  dbname=${DB_NAME}
+  sslmode=disable
 
 database:
   driver_name: postgres
-  connection_string: >-
-    host=${DB_HOST} port=${DB_PORT}
-    user=${DB_USER} password=${DB_PASS}
-    dbname=${DB_NAME} sslmode=disable
   max_idle_connections: 5
   max_open_connections: 20
   max_lifetime: 60s
+
+clients:
+  sso:
+    address: sso-service:44044
+    timeout: 5s
+    retries_count: 3
+
+  stat:
+    address: stat-service:9090
+    timeout: 5s
+    retries_count: 3
 
 grpc:
   address: ":50051"
@@ -20,12 +35,15 @@ http:
   write_timeout: 5s
 
 keys:
-  public_key_file: "config/public.pem"
+  private_key_file: "config/private.pem"
+  public_key_file:  "config/public.pem"
 
 auth:
   access_token_ttl: 15m
   refresh_token_ttl: 24h
 
 logger:
-  level: info       # debug / info / warn / error
-  format: text      # text / json
+  level: info
+  format: text
+
+secret: ${SECRET}

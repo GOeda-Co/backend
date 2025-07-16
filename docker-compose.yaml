@@ -1,72 +1,106 @@
-version: '3.9'
+version: "3.9"
+
 services:
-  postgres-sso:
+  # ───── Shared PostgreSQL ─────
+  postgres:
     image: postgres:15
+    container_name: postgres
+    restart: always
     environment:
-      POSTGRES_DB: sso_db
+      POSTGRES_DB: repeatro
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - sso_pgdata:/var/lib/postgresql/data
-
-  postgres-card:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: card_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - card_pgdata:/var/lib/postgresql/data
-
-  postgres-deck:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: deck_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - deck_pgdata:/var/lib/postgresql/data
-
-  sso:
-    build:
-      context: ./sso
-    container_name: sso-service
-    env_file:
-      - ./sso/.env
-    volumes:
-      - ./sso/config:/app/config
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - "8001:44044"
-    depends_on:
-      - postgres-sso
+      - "5432:5432"
 
+  # ───── Card Service ─────
   card:
     build:
       context: ./card
+      dockerfile: Dockerfile
     container_name: card-service
     env_file:
       - ./card/.env
     volumes:
       - ./card/config:/app/config
-    ports:
-      - "8002:44045"
+      - ./card/.env:/app/.env
     depends_on:
-      - postgres-card
+      - postgres
+      - sso
+      - stats
+    ports:
+      - "8101:8081"
 
+  # ───── Deck Service ─────
   deck:
     build:
       context: ./deck
+      dockerfile: Dockerfile
     container_name: deck-service
     env_file:
       - ./deck/.env
     volumes:
       - ./deck/config:/app/config
-    ports:
-      - "8003:44046"
+      - ./deck/.env:/app/.env
     depends_on:
-      - postgres-deck
+      - postgres
+    ports:
+      - "8202:8082"
+
+  # ───── Repeatro Service ─────
+  repeatro:
+    build:
+      context: ./repeatro
+      dockerfile: Dockerfile
+    container_name: repeatro-service
+    env_file:
+      - ./repeatro/.env
+    volumes:
+      - ./repeatro/config:/app/config
+      - ./repeatro/.env:/app/.env
+    depends_on:
+      - postgres
+      - sso
+      - card
+      - deck
+      - stats
+    ports:
+      - "8400:8070"
+
+    # ───── SSO Service ─────
+  sso:
+    build:
+      context: ./sso
+      dockerfile: Dockerfile
+    container_name: sso-service
+    env_file:
+      - ./sso/.env
+    volumes:
+      - ./sso/config:/app/config
+      - ./sso/.env:/app/.env
+    depends_on:
+      - postgres
+    ports:
+      - "8001:44044"
+
+    # ───── Stats Service ─────
+  stats:
+    build:
+      context: ./stats
+      dockerfile: Dockerfile
+    container_name: stat-service
+    env_file:
+      - ./stats/.env
+    volumes:
+      - ./stats/config:/app/config
+      - ./stats/.env:/app/.env
+    depends_on:
+      - postgres
+      - sso
+    ports:
+      - "8301:9090"
 
 volumes:
-  sso_pgdata:
-  card_pgdata:
-  deck_pgdata:
+  postgres_data:

@@ -15,9 +15,11 @@ import (
 
 	// "net/http"
 
+	"github.com/joho/godotenv"
 	client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
 	"github.com/tomatoCoderq/deck/internal/config"
 	"github.com/tomatoCoderq/deck/internal/lib/security"
+	"gopkg.in/yaml.v3"
 
 	// userHttp "github.com/tomatoCoderq/card/internal/controller/http"
 	// "github.com/tomatoCoderq/card/internal/lib/security"
@@ -37,7 +39,20 @@ const (
 )
 
 func main() {
-	cfg := config.MustLoad()
+	// Load .env variables
+	_ = godotenv.Load("/app/.env")
+
+	// Read and expand config.yaml
+	raw, err := os.ReadFile("/app/config/config.yaml")
+	if err != nil {
+		panic(fmt.Errorf("could not read config.yaml: %w", err))
+	}
+	expanded := os.ExpandEnv(string(raw))
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
+		panic(fmt.Errorf("could not unmarshal config.yaml: %w", err))
+	}
 
 	log := setupLogger(cfg.Env)
 
@@ -58,20 +73,20 @@ func main() {
 		PrivateKey:      cfg.Secret,
 		ExpirationDelta: 600 * time.Minute,
 	}
- 
+
 	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, security)
-		go func() {
+	go func() {
 		application.GRPCServer.MustRun()
 	}()
 
-	//TODO: Завершить работу программы
+	// TODO: Завершить работу программы
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
-	
+
 	<-stop
 
-	application.GRPCServer.Stop() 
-	//TODO: Add close for db
+	application.GRPCServer.Stop()
+	// TODO: Add close for db
 	log.Info("Gracefully stopped")
 
 	// storage := postgresql.New(cfg.ConnectionString, log)
@@ -113,11 +128,11 @@ func main() {
 
 }
 
-//start app
+// start app
 
-//end app
+// end app
 
-//logger
+// logger
 
 // TODO: technically each microservice should have separated main and current one should be divided into three
 // func main() {
