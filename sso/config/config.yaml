@@ -1,12 +1,15 @@
-env: dev      # "dev", "prod", "local"
+env: dev  # "dev", "prod", "local"
+
+connection_string: >-
+  host=${DB_HOST}
+  port=${DB_PORT}
+  user=${DB_USER}
+  password=${DB_PASS}
+  dbname=${DB_NAME}
+  sslmode=disable
 
 database:
   driver_name: postgres
-  # можно подставлять из env, если настроить обработку ${…}
-  connection_string: >-
-    host=${DB_HOST} port=${DB_PORT}
-    user=${DB_USER} password=${DB_PASS}
-    dbname=${DB_NAME} sslmode=disable
   max_idle_connections: 5
   max_open_connections: 20
   max_lifetime: 60s
@@ -29,5 +32,5 @@ auth:
   refresh_token_ttl: 24h
 
 logger:
-  level: info       # debug / info / warn / error
-  format: text      # text / json
+  level: info
+  format: text

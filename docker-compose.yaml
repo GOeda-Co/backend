@@ -1,0 +1,72 @@
+version: '3.9'
+services:
+  postgres-sso:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: sso_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - sso_pgdata:/var/lib/postgresql/data
+
+  postgres-card:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: card_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - card_pgdata:/var/lib/postgresql/data
+
+  postgres-deck:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: deck_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - deck_pgdata:/var/lib/postgresql/data
+
+  sso:
+    build:
+      context: ./sso
+    container_name: sso-service
+    env_file:
+      - ./sso/.env
+    volumes:
+      - ./sso/config:/app/config
+    ports:
+      - "8001:44044"
+    depends_on:
+      - postgres-sso
+
+  card:
+    build:
+      context: ./card
+    container_name: card-service
+    env_file:
+      - ./card/.env
+    volumes:
+      - ./card/config:/app/config
+    ports:
+      - "8002:44045"
+    depends_on:
+      - postgres-card
+
+  deck:
+    build:
+      context: ./deck
+    container_name: deck-service
+    env_file:
+      - ./deck/.env
+    volumes:
+      - ./deck/config:/app/config
+    ports:
+      - "8003:44046"
+    depends_on:
+      - postgres-deck
+
+volumes:
+  sso_pgdata:
+  card_pgdata:
+  deck_pgdata:
