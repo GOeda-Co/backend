@@ -1,28 +1,28 @@
 services:
-  postgres-sso:
+  postgres-card:
     image: postgres:15
-    container_name: postgres-sso
+    container_name: postgres-card
     restart: always
     environment:
       POSTGRES_DB:       ${DB_NAME}
       POSTGRES_USER:     ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     volumes:
-      - postgres_sso_data:/var/lib/postgresql/data
+      - postgres_card_data:/var/lib/postgresql/data
 
-  sso:
+  card:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sso-service
+    container_name: card-service
     env_file:
       - ./.env
     ports:
-      - "8001:44044"
+      - "8101:8081"
     depends_on:
-      - postgres-sso
+      - postgres-card
     volumes:
       - ${CONFIG_PATH}:/app/config/config.yaml
 
 volumes:
-  postgres_sso_data:
+  postgres_card_data:

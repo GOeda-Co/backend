@@ -1,28 +1,28 @@
 services:
-  postgres-sso:
+  postgres-stats:
     image: postgres:15
-    container_name: postgres-sso
+    container_name: postgres-stats
     restart: always
     environment:
       POSTGRES_DB:       ${DB_NAME}
       POSTGRES_USER:     ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     volumes:
-      - postgres_sso_data:/var/lib/postgresql/data
+      - postgres_stats_data:/var/lib/postgresql/data
 
-  sso:
+  stats:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sso-service
+    container_name: stats-service
     env_file:
       - ./.env
     ports:
-      - "8001:44044"
+      - "8301:9090"
     depends_on:
-      - postgres-sso
+      - postgres-stats
     volumes:
       - ${CONFIG_PATH}:/app/config/config.yaml
 
 volumes:
-  postgres_sso_data:
+  postgres_stats_data:

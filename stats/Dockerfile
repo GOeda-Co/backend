@@ -5,7 +5,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod tidy
 COPY . .
-RUN go build -o server cmd/sso/main.go
+RUN go build -o server cmd/stats/main.go
 
 # production-stage
 FROM alpine:latest
@@ -13,5 +13,5 @@ RUN adduser -D appuser
 WORKDIR /app
 COPY --from=builder /app/server .
 USER appuser
-EXPOSE 8001
+EXPOSE 8301
 ENTRYPOINT ["/app/server"]
