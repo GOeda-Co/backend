@@ -63,5 +63,22 @@ func (r *Repository) FindAllCardsInDeck(deckId uuid.UUID) ([]models.Card, error)
 }
 
 func (r *Repository) AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error {
-	return r.db.Model(&models.Card{}).Where("card_id = ?", cardId).Update("deck_id", deckId).Error
+	tx := r.db.Begin()
+
+	if err := tx.Model(&models.Card{}).
+		Where("card_id = ?", cardId).
+		Update("deck_id", deckId).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Model(&models.Deck{}).
+		Where("deck_id = ?", deckId).
+		UpdateColumn("cards_quantity", gorm.Expr("cards_quantity + ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+	// return r.db.Model(&models.Card{}).Where("card_id = ?", cardId).Update("deck_id", deckId).Error
 }

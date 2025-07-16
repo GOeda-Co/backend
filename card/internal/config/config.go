@@ -38,6 +38,7 @@ type Client struct {
 
 type ClientsConfig struct {
 	SSO Client `yaml:"sso"`
+	STAT Client `yaml:"stat"`
 }
 
 func MustLoad() *Config {

@@ -64,7 +64,9 @@ func (cr Repository) AverageGrade(uid, deckId uuid.UUID, startTime, endTime time
 		return 0, err
 	}
 
-	fmt.Println(reviews)
+	if len(reviews) == 0 {
+		return 0, nil
+	}
 
 	average := func(reviews []model.Review) float64 {
 		var sum int
@@ -86,4 +88,20 @@ func (cr Repository) CountReviewedCards(uid, deckId uuid.UUID, startTime, endTim
 	}
 
 	return int32(len(reviews)), nil
+}
+
+func (cr Repository) AddRecord(uid, deckId, cardId uuid.UUID, createdAt time.Time, grade int) (string, error) {
+	// var review model.Review
+	review := model.Review {
+		UserID: uid,
+		DeckId: deckId,
+		CardID: cardId,
+		CreatedAt: createdAt,
+		Grade: int32(grade),
+	}
+	if err := cr.db.Create(&review).Error; err != nil {
+		return "", err
+	}
+
+	return review.ResultId.String(), nil
 }

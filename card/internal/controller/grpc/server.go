@@ -7,6 +7,7 @@ import (
 
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	"github.com/google/uuid"
+	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/controller"
 	"github.com/tomatoCoderq/card/internal/lib/convert"
 	"github.com/tomatoCoderq/card/internal/lib/security"
@@ -30,14 +31,19 @@ func GetAuthUser(ctx context.Context) (*security.AuthUser, error) {
 	return &authUser, nil
 }
 
-
 type ServerAPI struct {
 	cardv1.UnimplementedCardServiceServer
-	service controller.Card
+	service    controller.Card
+	statClient *statClient.Client
 }
 
-func Register(gRPCServer *grpc.Server, card controller.Card) {
-	cardv1.RegisterCardServiceServer(gRPCServer, &ServerAPI{service: card})
+func Register(gRPCServer *grpc.Server, card controller.Card, statClient *statClient.Client) {
+	cardv1.RegisterCardServiceServer(
+		gRPCServer,
+		&ServerAPI{
+			service:    card,
+			statClient: statClient,
+		})
 }
 
 func (s *ServerAPI) AddCard(ctx context.Context, in *cardv1.AddCardRequest) (*cardv1.AddCardResponse, error) {
@@ -62,12 +68,19 @@ func (s *ServerAPI) AddCard(ctx context.Context, in *cardv1.AddCardRequest) (*ca
 }
 
 func (s *ServerAPI) ReadAllCards(ctx context.Context, in *cardv1.ReadAllCardsRequest) (*cardv1.ReadAllCardsResponse, error) {
-	userId, err := uuid.Parse(in.UserId)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "Invalid user ID")
-	}
+	_, err := uuid.Parse(in.UserId)
 
-	cards, err := s.service.ReadAllCards(userId)
+	authUser, err := GetAuthUser(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))
+	}
+	// ctx = withToken(ctx, ctx.Value("token").(string))
+
+	// if err != nil {
+	// 	return nil, status.Error(codes.InvalidArgument, "Invalid user ID")
+	// }
+
+	cards, err := s.service.ReadAllCards(authUser.ID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to read cards")
 	}
@@ -134,7 +147,7 @@ func (s *ServerAPI) DeleteCard(ctx context.Context, in *cardv1.DeleteCardRequest
 
 	err = s.service.DeleteCard(cardId, userId)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprint("Failed to delete card: %v", err))
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to delete card: %v", err))
 	}
 
 	return &cardv1.DeleteCardResponse{}, nil
@@ -142,6 +155,11 @@ func (s *ServerAPI) DeleteCard(ctx context.Context, in *cardv1.DeleteCardRequest
 
 func (s *ServerAPI) AddAnswers(ctx context.Context, in *cardv1.AddAnswersRequest) (*cardv1.AddAnswersResponse, error) {
 	var answers []schemes.AnswerScheme
+
+	authUser, err := GetAuthUser(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))
+	}
 
 	for _, answer := range in.Answers {
 		if answer.CardId == "" {
@@ -157,15 +175,12 @@ func (s *ServerAPI) AddAnswers(ctx context.Context, in *cardv1.AddAnswersRequest
 
 		answers = append(answers, *answerConverted)
 	}
-	
-	authUser, err := GetAuthUser(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "Failed to auth user")
-	}
 
-	err = s.service.AddAnswers(authUser.ID, answers)
+	fmt.Println("ANS", answers)
+
+	err = s.service.AddAnswers(ctx, authUser.ID, answers)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "Failed to add answers")
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to add answers: %v", err))
 	}
 
 	return &cardv1.AddAnswersResponse{Message: "added answers successfully"}, nil

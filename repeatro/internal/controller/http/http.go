@@ -6,13 +6,15 @@ import (
 	"io"
 	"net/http"
 
+	statsv1 "github.com/GOeda-Co/proto-contract/gen/go/stats"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	_ "github.com/swaggo/swag/example/celler/httputil"
 	"github.com/google/uuid"
+	_ "github.com/swaggo/swag/example/celler/httputil"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
 	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
+	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	model "github.com/tomatoCoderq/repeatro/pkg/models"
 	"github.com/tomatoCoderq/repeatro/pkg/schemes"
 )
@@ -21,13 +23,15 @@ type Controller struct {
 	ssoClient  *ssoClient.Client
 	cardClient *cardClient.Client
 	deckClient *deckClient.Client
+	statClient *statClient.Client
 }
 
-func New(ssoClient *ssoClient.Client, cardClient *cardClient.Client, deckClient *deckClient.Client) *Controller {
+func New(ssoClient *ssoClient.Client, cardClient *cardClient.Client, deckClient *deckClient.Client, statClient *statClient.Client) *Controller {
 	return &Controller{
 		ssoClient:  ssoClient,
 		cardClient: cardClient,
 		deckClient: deckClient,
+		statClient: statClient,
 	}
 }
 
@@ -171,7 +175,7 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 //	@Param			card	body		model.Card	true	"Card to add"
 //	@Success		200		{object}	model.Card
 //	@Failure		500		{object}	map[string]string
-//	@Router			/card [post]
+//	@Router			/cards [post]
 func (cc *Controller) AddCard(ctx *gin.Context) {
 	body, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {
@@ -209,7 +213,7 @@ func (cc *Controller) AddCard(ctx *gin.Context) {
 //	@Produce		json
 //	@Success		200	{array}		model.Card
 //	@Failure		500	{object}	map[string]string
-//	@Router			/cards [get]
+//	@Router			/cards/learn [get]
 func (cc *Controller) ReadAllCardsToLearn(ctx *gin.Context) {
 	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
@@ -516,16 +520,55 @@ func (cc *Controller) ReadCardsFromDeck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-// add card
-// add deck
-// add many cards in one deck
-// delete deck (and all cards inside)
-// delete card (and from the deck it's assigned to)
-// update card info
-// update deck info
 
-/*in the future:
-admin can check all possible deecks
-deck can be open/closed
-pictures taken from other repo
-*/
+// GetAverageGrade godoc
+// @Summary      Get user's average grade
+// @Description  Returns the average grade for the current user for the daily time range
+// @Tags         statistics
+// @Produce      json
+// @Success      200  {object}  statsv1.GetAverageGradeResponse
+// @Failure      400  {object}  gin.H{"error": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /stats/average-grade [get]
+func (cc *Controller) GetAverageGrade(ctx *gin.Context) {
+	// did := ctx.Param("id")
+
+	uid, err := GetUserIdFromContext(ctx)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	response, err := cc.statClient.GetAverageGrade(ctx, uid.String(), "", statsv1.TimeRange_DAILY)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get average grade: %v", err)})
+		return
+	}
+	ctx.JSON(http.StatusOK, response)
+}
+
+// GetCardsReviewedCount godoc
+// @Summary      Get count of reviewed cards
+// @Description  Returns the number of cards reviewed by the current user for the daily time range
+// @Tags         statistics
+// @Produce      json
+// @Success      200  {object}  statsv1.GetCardsReviewedCountResponse
+// @Failure      400  {object}  gin.H{"error": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /stats/cards-reviewed-count [get]
+func (cc *Controller) GetCardsReviewedCount(ctx *gin.Context) {
+	// did := ctx.Param("id")
+
+	uid, err := GetUserIdFromContext(ctx)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Error during getting uid occurred: %v", err)})
+		return
+	}
+
+	response, err := cc.statClient.GetCardsReviewedCount(ctx, uid.String(), "", statsv1.TimeRange_DAILY)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get reviewed cards: %v", err)})
+		return
+	}
+	ctx.JSON(http.StatusOK, response)
+}

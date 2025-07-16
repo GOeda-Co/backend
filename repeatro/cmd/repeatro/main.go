@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -12,6 +11,7 @@ import (
 	"github.com/tomatoCoderq/repeatro/docs"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
+	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
 	"github.com/tomatoCoderq/repeatro/internal/config"
 	"github.com/tomatoCoderq/repeatro/internal/lib/security"
@@ -53,14 +53,17 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(ssoClient)
+	statClient, err := statClient.New(context.Background(), log, cfg.Clients.STAT.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.STAT.RetriesCount)
+	if err != nil {
+		panic(err)
+	}
 
 	security := security.Security{
 		PrivateKey:      cfg.Secret,
 		ExpirationDelta: 600 * time.Minute,
 	}
 
-	application := app.New(log, cfg.HTTPServer.Port, cfg.HTTPServer.Address, ssoClient, cardClient, deckClient, security)
+	application := app.New(log, cfg.HTTPServer.Port, cfg.HTTPServer.Address, ssoClient, cardClient, deckClient, statClient, security)
 	go func() {
 		application.HttpServer.MustRun()
 	}()

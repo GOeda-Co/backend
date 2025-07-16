@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 
+
 	ssoClient "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
 	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/config"
@@ -51,20 +52,20 @@ func main() {
 		PrivateKey:      cfg.Secret,
 		ExpirationDelta: 600 * time.Minute,
 	}
-
+ 
 	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, statClient, security)
-	go func() {
+		go func() {
 		application.GRPCServer.MustRun()
 	}()
 
-	// TODO: Завершить работу программы
+	//TODO: Завершить работу программы
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
-
+	
 	<-stop
 
-	application.GRPCServer.Stop()
-	// TODO: Add close for db
+	application.GRPCServer.Stop() 
+	//TODO: Add close for db
 	log.Info("Gracefully stopped")
 
 	// storage := postgresql.New(cfg.ConnectionString, log)
@@ -106,11 +107,11 @@ func main() {
 
 }
 
-// start app
+//start app
 
-// end app
+//end app
 
-// logger
+//logger
 
 // TODO: technically each microservice should have separated main and current one should be divided into three
 // func main() {

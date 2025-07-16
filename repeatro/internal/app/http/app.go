@@ -29,6 +29,7 @@ import (
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
 	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
+	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	httpRepeatro "github.com/tomatoCoderq/repeatro/internal/controller/http"
 	"github.com/tomatoCoderq/repeatro/internal/lib/security"
 	_ "github.com/tomatoCoderq/repeatro/pkg/models"
@@ -47,12 +48,13 @@ func New(
 	ssoClient *ssoClient.Client,
 	cardClient *cardClient.Client,
 	deckClient *deckClient.Client,
+	statClient *statClient.Client,
 	security security.Security,
 ) *App {
 	router := gin.Default()
 	router.Use(gin.Recovery(), cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // adjust for your frontend
-		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowMethods:     []string{"POST", "GET", "OPTIONS", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -62,7 +64,7 @@ func New(
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 
-	ctrl := httpRepeatro.New(ssoClient, cardClient, deckClient)
+	ctrl := httpRepeatro.New(ssoClient, cardClient, deckClient, statClient)
 	router.Handle(http.MethodPost, "/register", ctrl.Register)
 	router.Handle(http.MethodPost, "/login", ctrl.Login)
 
@@ -88,6 +90,12 @@ func New(
 	decks.Handle(http.MethodPost, "/:deck_id/cards/:card_id", ctrl.AddCardToDeck)
 	decks.Handle(http.MethodGet, "/:id/cards", ctrl.ReadCardsFromDeck)
 	
+
+	stats := router.Group("/stats")
+	stats.Use(security.AuthMiddleware())
+	stats.Handle(http.MethodGet, "/average", ctrl.GetAverageGrade)
+	stats.Handle(http.MethodGet, "/count", ctrl.GetCardsReviewedCount)
+
 
 	httpServer := &http.Server{
 		Addr:    address,

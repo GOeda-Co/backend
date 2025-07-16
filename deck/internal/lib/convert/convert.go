@@ -30,6 +30,7 @@ func ModelToProtoDeck(deck *model.Deck) *deckv1.Deck {
 		CreatedBy:   deck.CreatedBy.String(),
 		CreatedAt:   timestamppb.New(deck.CreatedAt),
 		Name:        deck.Name,
+		CardsQuantity: uint32(deck.CardsQuantity),
 		Description: deck.Description,
 	}
 }

@@ -33,6 +33,7 @@ type ClientsConfig struct {
 	SSO  Client `yaml:"sso"`
 	CARD Client `yaml:"card"`
 	DECK Client `yaml:"deck"`
+	STAT Client `yaml:"stat"`
 }
 
 func MustLoad() *Config {
