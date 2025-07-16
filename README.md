@@ -192,7 +192,7 @@ Project Link: [https://github.com/GOeda-Co/backend](https://github.com/GOeda-Co/
 [issues-shield]: https://img.shields.io/github/issues/GOeda-Co/backend.svg?style=for-the-badge
 [issues-url]: https://github.com/GOeda-Co/backend/issues
 [license-shield]: https://img.shields.io/github/license/GOeda-Co/backend.svg?style=for-the-badge
-[license-url]: https://github.com/GOeda-Co/backend/LICENSE
+[license-url]: https://github.com/GOeda-Co/backend/blob/main/LICENSE
 [goose]: https://github.com/pressly/goose
 [swaggo]: https://github.com/swaggo/swag
 [lingua-go]: https://github.com/pemistahl/lingua-go
