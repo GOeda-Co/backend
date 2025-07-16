@@ -76,6 +76,8 @@ func InterceptorLogger(l *slog.Logger) grpclog.Logger {
 func (c *Client) AddCard(ctx context.Context, card *model.Card) (model.Card, error) {
 	const op = "grpc.AddCard"
 
+	ctx = withToken(ctx, ctx.Value("token").(string))
+	
 	resp, err := c.api.AddCard(ctx, &cardv1.AddCardRequest{
 		Card: convert.ModelToProto(card),
 	})

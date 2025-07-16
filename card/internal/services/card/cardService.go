@@ -1,13 +1,16 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"reflect"
 	"time"
 
 	"github.com/google/uuid"
+	"google.golang.org/grpc/metadata"
 
+	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/lib/sm2"
 	"github.com/tomatoCoderq/card/pkg/model"
 	"github.com/tomatoCoderq/card/pkg/scheme"
@@ -26,15 +29,18 @@ type CardRepository interface {
 type Card struct {
 	log            *slog.Logger
 	cardRepository CardRepository
+	statClient *statClient.Client
 }
 
 func New(
 	log *slog.Logger,
 	cardRepo CardRepository,
+	statClient *statClient.Client,
 ) *Card {
 	return &Card{
 		log:            log,
 		cardRepository: cardRepo,
+		statClient: statClient,
 	}
 }
 
@@ -103,7 +109,8 @@ func (cm Card) DeleteCard(cardId uuid.UUID, userId uuid.UUID) error {
 	return nil
 }
 
-func (cm Card) AddAnswers(userId uuid.UUID, answers []schemes.AnswerScheme) error {
+func (cm Card) AddAnswers(ctx context.Context, userId uuid.UUID, answers []schemes.AnswerScheme) error {
+
 	for _, answer := range answers {
 		if answer.Grade < 0 || answer.Grade > 5 {
 			return fmt.Errorf("invalid grade")
@@ -147,18 +154,24 @@ func (cm Card) AddAnswers(userId uuid.UUID, answers []schemes.AnswerScheme) erro
 
 		fmt.Println("NEWCARD", card)
 
-		// result := model.Result {
-		// 	UserId: card.CreatedBy,
-		// 	CardId: card.CardId,
-		// 	Grade: answer.Grade,
+		// result := model.Review {
+		// 	UserID: card.CreatedBy,
+		// 	CardID: card.CardId,
+		// 	Grade: int32(answer.Grade),
 		// }
 
 		// fmt.Println("Res", result.CreatedAt)
+		fmt.Println("CAME TO RES")
+		md, _ := metadata.FromIncomingContext(ctx)
+		fmt.Println(md["authorization"])
 
-		// if err = cm.resultRepository.AddResult(&result); err != nil {
-		// 	fmt.Println("so here")
-		// 	return err
-		// }
+		fmt.Println("INFODEK", card.DeckID.String())
+
+		reviewId, err := cm.statClient.AddRecord(ctx, card.DeckID.String(), card.CardId.String(), answer.Grade)
+		if err != nil {
+			fmt.Println("SO HERE", reviewId)
+			return err
+		}
 	}
 	return nil
 }

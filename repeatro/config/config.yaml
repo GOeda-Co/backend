@@ -12,4 +12,6 @@ clients:
     address: "localhost:50051"
   deck:
     address: "localhost:50054"
+  stat:
+    address: "localhost:50055"
 secret: "some very secret secret"

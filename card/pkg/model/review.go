@@ -14,7 +14,3 @@ type Review struct {
 	CreatedAt time.Time
 	Grade     int32
 }
-
-func (Review) TableName() string {
-  return "results" 
-}

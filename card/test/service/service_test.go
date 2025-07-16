@@ -20,6 +20,11 @@ type MockCardRepo struct {
 	mock.Mock
 }
 
+// ReadAllCardsByUser implements services.CardRepository.
+func (m *MockCardRepo) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) {
+	panic("unimplemented")
+}
+
 func (m *MockCardRepo) AddCard(card *model.Card) error {
 	args := m.Called(card)
 	return args.Error(0)
@@ -53,7 +58,7 @@ func (m *MockCardRepo) DeleteCard(cardId uuid.UUID) error {
 func TestAddCard(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo)
+	service := services.New(logger, mockRepo, nil)
 
 	card := &model.Card{
 		CardId:      uuid.New(),
@@ -71,11 +76,10 @@ func TestAddCard(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
-
 func TestReadAllCards(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo)
+	service := services.New(logger, mockRepo,  nil)
 
 	userId := uuid.New()
 	expectedCards := []model.Card{{Word: "A"}, {Translation: "B"}}
@@ -91,7 +95,7 @@ func TestReadAllCards(t *testing.T) {
 func TestUpdateCard(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo)
+	service := services.New(logger, mockRepo,  nil)
 
 	cardId := uuid.New()
 	userId := uuid.New()
@@ -112,7 +116,7 @@ func TestUpdateCard(t *testing.T) {
 func TestDeleteCard(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo)
+	service := services.New(logger, mockRepo,  nil)
 
 	cardId := uuid.New()
 	userId := uuid.New()
@@ -130,7 +134,7 @@ func TestDeleteCard(t *testing.T) {
 func TestAddAnswers_ValidGradeAndOwner(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo)
+	service := services.New(logger, mockRepo,  nil)
 
 	userId := uuid.New()
 	cardId := uuid.New()

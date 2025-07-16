@@ -44,10 +44,8 @@ func (s *DeckServerAPI) AddDeck(ctx context.Context, in *deckv1.AddDeckRequest) 
 		return nil, status.Error(codes.InvalidArgument, "Name is required")
 	}
 
-	fmt.Println("CTX", ctx.Value(security.UserContextKey))
-
 	authUser, err := GetAuthUser(ctx)
-	fmt.Println("Auth User", authUser)
+
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "User not authenticated")
 	}

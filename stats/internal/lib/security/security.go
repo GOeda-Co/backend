@@ -21,7 +21,7 @@ import (
 )
 
 type contextKey string
-const userContextKey contextKey = "authUser"
+const UserContextKey contextKey = "authUser"
 
 func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	userClaims, exists := ctx.Get("userClaims")
@@ -175,7 +175,7 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 			email: email,
 		}	
 
-		ctx = context.WithValue(ctx, userContextKey, authUser)
+		ctx = context.WithValue(ctx, UserContextKey, authUser)
 
 		return handler(ctx, req)
 	}

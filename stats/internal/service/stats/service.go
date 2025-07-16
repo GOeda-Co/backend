@@ -23,13 +23,14 @@ func calculateTimeRange(tr statsv1.TimeRange) (start, end time.Time) {
 		start = now
 	}
 	end = now
-	
+
 	return
 }
 
 type Repository interface {
 	AverageGrade(uid, deckId uuid.UUID, startTime, endTime time.Time) (float64, error)
 	CountReviewedCards(uid, deckId uuid.UUID, startTime, endTime time.Time) (int32, error)
+	AddRecord(uid, deckId, cardId uuid.UUID, createdAt time.Time, grade int) (string, error)
 	// GetCardsLearnedCount(uid, cardId string, startTime, endTime time.Time) (int32, error)
 }
 
@@ -40,7 +41,7 @@ type Service struct {
 
 func New(log *slog.Logger, repo Repository) *Service {
 	return &Service{
-		log: log,
+		log:  log,
 		repo: repo,
 	}
 }
@@ -109,16 +110,35 @@ func (s *Service) GetCardsReviewedCount(uid, deckId string, timeRange statsv1.Ti
 	return count, nil
 }
 
-// func (s *Service) GetCardsLearnedCount(uid, cardId string, timeRange statsv1.TimeRange) (int32, error) {
-// 	if timeRange == statsv1.TimeRange_TIME_RANGE_UNSPECIFIED {
-// 		return 0, errors.New("time range must be specified")
-// 	}
+func (s *Service) AddRecord(uid uuid.UUID, deckId, cardId string, createdAt time.Time, grade int) (string, error) {
+	var err error
+	var deckIdParsed uuid.UUID
 
-// 	startTime, endTime := calculateTimeRange(timeRange)
+	if deckId != "" {
+		deckIdParsed, err = uuid.Parse(deckId)
+		if err != nil {
+			return "", fmt.Errorf("failed during parsing uid")
+		}
+	} else {
+		deckIdParsed = uuid.UUID{}
+	}
 
-// 	// TODO: Replace with real DB query:
-// 	// 	// count := s.repo.CountLearnedCards(uid, cardId, startTime, endTime)
+	var cardIdParsed uuid.UUID
+	if cardId != "" {
+		cardIdParsed, err = uuid.Parse(deckId)
+		if err != nil {
+			return "", fmt.Errorf("failed during parsing uid")
+		}
+	} else {
+		cardIdParsed = uuid.UUID{}
+	}
 
+	fmt.Println("QWE", deckIdParsed, cardIdParsed)
 
-// 	return 17, nil // stub value
-// }
+	reviewId, err := s.repo.AddRecord(uid, deckIdParsed, cardIdParsed, createdAt, grade)
+	if err != nil {
+		return "", err
+	}
+
+	return reviewId, nil
+}

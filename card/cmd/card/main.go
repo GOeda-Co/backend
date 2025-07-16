@@ -6,22 +6,14 @@ import (
 	"syscall"
 	"time"
 
-	// "fmt"
 	"log/slog"
 	"os"
 
-	// "time"
 
-	// "net/http"
-
-	client "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
+	ssoClient "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
+	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/config"
 	"github.com/tomatoCoderq/card/internal/lib/security"
-
-	// userHttp "github.com/tomatoCoderq/card/internal/controller/http"
-	// "github.com/tomatoCoderq/card/internal/lib/security"
-	// "github.com/tomatoCoderq/card/internal/repository/postgresql"
-	// services "github.com/tomatoCoderq/card/internal/services/card"
 
 	app "github.com/tomatoCoderq/card/internal/app"
 	// "github.com/gin-gonic/gin"
@@ -46,7 +38,12 @@ func main() {
 	)
 	log.Debug("debug messages are enabled")
 
-	ssoClient, err := client.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
+	ssoClient, err := ssoClient.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
+	if err != nil {
+		panic(err)
+	}
+
+	statClient, err := statClient.New(context.Background(), log, cfg.Clients.STAT.Address, cfg.Clients.STAT.Timeout.Abs(), cfg.Clients.STAT.RetriesCount)
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +53,7 @@ func main() {
 		ExpirationDelta: 600 * time.Minute,
 	}
  
-	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, security)
+	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, statClient, security)
 		go func() {
 		application.GRPCServer.MustRun()
 	}()
