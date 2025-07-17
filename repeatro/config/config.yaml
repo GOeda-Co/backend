@@ -39,7 +39,7 @@ grpc:
   address: ":50051"
   timeout: 10s
 
-http:
+http_server:
   address: ":${REPEATRO_CONTAINER_PORT}"
   read_timeout: 5s
   write_timeout: 5s
