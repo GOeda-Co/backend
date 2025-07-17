@@ -18,11 +18,6 @@ grpc:
   address: ":50051"
   timeout: 10s
 
-http:
-  address: ":44044"
-  read_timeout: 5s
-  write_timeout: 5s
-
 keys:
   private_key_file: "config/private.pem"
   public_key_file:  "config/public.pem"
@@ -32,7 +27,7 @@ auth:
   refresh_token_ttl: 24h
 
 logger:
-  level: info
-  format: text
+  level: info   # debug / info / warn / error
+  format: text  # text / json
 
 secret: ${SECRET}

@@ -1,11 +1,11 @@
-env: dev      # "dev", "prod", "local"
+env: dev  # "dev", "prod", "local"
 
 connection_string: >-
-  host=${DB_HOST} 
+  host=${DB_HOST}
   port=${DB_PORT}
-  user=${DB_USER} 
+  user=${DB_USER}
   password=${DB_PASS}
-  dbname=${DB_NAME} 
+  dbname=${DB_NAME}
   sslmode=disable
 
 database:
@@ -16,7 +16,7 @@ database:
 
 clients:
   sso:
-    address: sso-service:44044
+    address: sso-service:${SSO_CONTAINER_PORT}
     timeout: 5s
     retries_count: 3
 
@@ -24,20 +24,16 @@ grpc:
   address: ":50051"
   timeout: 10s
 
-http:
-  address: ":9090"
-  read_timeout: 5s
-  write_timeout: 5s
-
 keys:
-  public_key_file: "config/public.pem"
+  private_key_file: "config/private.pem"
+  public_key_file:  "config/public.pem"
 
 auth:
   access_token_ttl: 15m
   refresh_token_ttl: 24h
 
 logger:
-  level: info       # debug / info / warn / error
-  format: text      # text / json
+  level: info   # debug / info / warn / error
+  format: text  # text / json
 
 secret: ${SECRET}

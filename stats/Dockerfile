@@ -20,5 +20,5 @@ COPY ./config ./config
 COPY .env .env
 
 USER appuser
-EXPOSE 8301
+#EXPOSE 8301
 ENTRYPOINT ["./server"]

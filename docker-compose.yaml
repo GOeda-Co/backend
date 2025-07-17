@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # ───── Shared PostgreSQL ─────
   postgres:
@@ -29,9 +27,9 @@ services:
     depends_on:
       - postgres
       - sso
-      - stats
+      - stat
     ports:
-      - "8101:8081"
+      - "${CARD_HOST_PORT}:${CARD_CONTAINER_PORT}"
 
   # ───── Deck Service ─────
   deck:
@@ -47,7 +45,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "8202:8082"
+      - "${DECK_HOST_PORT}:${DECK_CONTAINER_PORT}"
 
   # ───── Repeatro Service ─────
   repeatro:
@@ -65,9 +63,9 @@ services:
       - sso
       - card
       - deck
-      - stats
+      - stat
     ports:
-      - "8400:8070"
+      - "${REPEATRO_HOST_PORT}:${REPEATRO_CONTAINER_PORT}"
 
     # ───── SSO Service ─────
   sso:
@@ -83,10 +81,10 @@ services:
     depends_on:
       - postgres
     ports:
-      - "8001:44044"
+      - "${SSO_HOST_PORT}:${SSO_CONTAINER_PORT}"
 
     # ───── Stats Service ─────
-  stats:
+  stat:
     build:
       context: ./stats
       dockerfile: Dockerfile
@@ -100,7 +98,7 @@ services:
       - postgres
       - sso
     ports:
-      - "8301:9090"
+      - "${STAT_HOST_PORT}:${STAT_CONTAINER_PORT}"
 
 volumes:
   postgres_data:

@@ -1,4 +1,4 @@
-env: dev
+env: dev  # "dev", "prod", "local"
 
 connection_string: >-
   host=${DB_HOST}
@@ -15,23 +15,23 @@ database:
   max_lifetime: 60s
 
 clients:
-  sso:
-    address: sso-service:44044
-    timeout: 5s
-    retries_count: 3
-
   card:
-    address: card-service:8081
+    address: card-service:${CARD_CONTAINER_PORT}
     timeout: 5s
     retries_count: 3
 
   deck:
-    address: deck-service:8082
+    address: deck-service:${DECK_CONTAINER_PORT}
+    timeout: 5s
+    retries_count: 3
+
+  sso:
+    address: sso-service:${SSO_CONTAINER_PORT}
     timeout: 5s
     retries_count: 3
 
   stat:
-    address: stat-service:9090
+    address: stat-service:${STAT_CONTAINER_PORT}
     timeout: 5s
     retries_count: 3
 
@@ -40,7 +40,7 @@ grpc:
   timeout: 10s
 
 http:
-  address: ":8070"
+  address: ":${REPEATRO_CONTAINER_PORT}"
   read_timeout: 5s
   write_timeout: 5s
 
@@ -53,7 +53,7 @@ auth:
   refresh_token_ttl: 24h
 
 logger:
-  level: info
-  format: text
+  level: info   # debug / info / warn / error
+  format: text  # text / json
 
 secret: ${SECRET}
