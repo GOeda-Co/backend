@@ -25,7 +25,7 @@ func main() {
 	log.Debug("Initializing debug mode")
 
 	// TODO: инициализировать приложение (app)
-	application := app.New(log, config.GRPC.Port, config.ConnectionString, config.TokenTTL)
+	application := app.New(log, config.GRPC.Address, config.ConnectionString, config.TokenTTL)
 
 	// TODO: запустить gRPC-сервер приложения
 	go func() {

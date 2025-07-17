@@ -338,6 +338,7 @@ func (cc *Controller) AddAnswers(ctx *gin.Context) {
 	var answers []*schemes.AnswerScheme
 
 	if err := ctx.ShouldBindJSON(&answers); err != nil {
+		fmt.Println(err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -347,6 +348,8 @@ func (cc *Controller) AddAnswers(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	fmt.Println("ANSSASAS", answers[0])
 
 	if _, err = cc.cardClient.AddAnswers(ctx, userId, answers); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

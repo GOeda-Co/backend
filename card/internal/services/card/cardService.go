@@ -116,6 +116,8 @@ func (cm Card) AddAnswers(ctx context.Context, userId uuid.UUID, answers []schem
 			return fmt.Errorf("invalid grade")
 		}
 
+		fmt.Println("ANSID", answer.CardId)
+
 		card, err := cm.cardRepository.ReadCard(answer.CardId)
 		if err != nil {
 			return err
@@ -130,7 +132,7 @@ func (cm Card) AddAnswers(ctx context.Context, userId uuid.UUID, answers []schem
 
 		cardOwnerId := card.CreatedBy
 		if userId != cardOwnerId {
-			return fmt.Errorf("invalid card owner")
+			return fmt.Errorf("invalid card owner. got %v. want %v", cardOwnerId, card.CreatedBy)
 		}
 
 		// recalculate values
