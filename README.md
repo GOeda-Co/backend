@@ -234,13 +234,12 @@ To get a local copy up and running, follow these steps.
    go mod tidy
    ```
 3. Create the database
-   ```sql
-   CREATE DATABASE repeatro;
-   ```
-4. Configure your environment (see `config.example.toml` in the root)
+   Configure the PostgreSQL with configs as in config.example.yaml
+4. Configure your environment (see `config.example.yaml` in the root)
 5. Start the backend
+  Run all micrservices as follows
    ```sh
-   go run backend/card/cmd/card/main.go
+   go run repeatro/cmd/repeatro/main.go
    # or for other services, adjust the path accordingly
    ```
 7. (Optional) Use [air](https://github.com/cosmtrek/air) for auto server restart
