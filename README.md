@@ -12,7 +12,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/GOeda-Co/backend">
-    <img src="https://avatars.githubusercontent.com/u/219566722?s=200&v=4" alt="Logo" width="80" height="80">
+    <img src="Logo.png" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">Repeatro – Anki-Style Vocabulary Learning App</h3>
   <p align="center">
