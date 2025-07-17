@@ -2,19 +2,22 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/tomatoCoderq/repeatro/docs"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
-	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
+	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/repeatro/internal/config"
 	"github.com/tomatoCoderq/repeatro/internal/lib/security"
+	"gopkg.in/yaml.v3"
 
 	app "github.com/tomatoCoderq/repeatro/internal/app"
 )
@@ -28,7 +31,20 @@ const (
 func main() {
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	cfg := config.MustLoad()
+	// Load .env variables
+	_ = godotenv.Load("/app/.env")
+
+	// Read and expand config.yaml
+	raw, err := os.ReadFile("/app/config/config.yaml")
+	if err != nil {
+		panic(fmt.Errorf("could not read config.yaml: %w", err))
+	}
+	expanded := os.ExpandEnv(string(raw))
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
+		panic(fmt.Errorf("could not unmarshal config.yaml: %w", err))
+	}
 
 	log := setupLogger(cfg.Env)
 
@@ -68,14 +84,14 @@ func main() {
 		application.HttpServer.MustRun()
 	}()
 
-	//TODO: Завершить работу программы
+	// TODO: Завершить работу программы
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	<-stop
 
 	application.HttpServer.Stop()
-	//TODO: Add close for db
+	// TODO: Add close for db
 	log.Info("Gracefully stopped")
 
 	// storage := postgresql.New(cfg.ConnectionString, log)
@@ -117,11 +133,11 @@ func main() {
 
 }
 
-//start app
+// start app
 
-//end app
+// end app
 
-//logger
+// logger
 
 // TODO: technically each microservice should have separated main and current one should be divided into three
 // func main() {

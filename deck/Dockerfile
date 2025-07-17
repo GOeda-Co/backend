@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 RUN go mod tidy
 
 COPY . .
-RUN go build -o server cmd/sso/main.go
+RUN go build -o server cmd/deck/main.go
 
 # production-stage
 FROM alpine:latest
@@ -20,5 +20,5 @@ COPY ./config ./config
 COPY .env .env
 
 USER appuser
-#EXPOSE 8001
+#EXPOSE 8202
 ENTRYPOINT ["./server"]

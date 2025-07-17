@@ -4,6 +4,6 @@ private.pem
 public.pem
 .env
 .vscode/
-.DS_Store
+*/.DS_Store
 .idea/
 */.env

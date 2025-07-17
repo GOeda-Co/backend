@@ -14,6 +14,17 @@ database:
   max_open_connections: 20
   max_lifetime: 60s
 
+clients:
+  card:
+    address: card-service:${CARD_CONTAINER_PORT}
+    timeout: 5s
+    retries_count: 3
+
+  sso:
+    address: sso-service:${SSO_CONTAINER_PORT}
+    timeout: 5s
+    retries_count: 3
+
 grpc:
   address: ":50051"
   timeout: 10s
