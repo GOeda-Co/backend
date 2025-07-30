@@ -1,0 +1,12 @@
+env: local
+
+connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+
+grpc:
+  port: 44044
+  address: ":44044"
+  timeout: 10s
+
+token_ttl: 15m
+
+secret: ${SECRET}

@@ -2,19 +2,22 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/tomatoCoderq/repeatro/docs"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
-	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
+	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/repeatro/internal/config"
 	"github.com/tomatoCoderq/repeatro/internal/lib/security"
+	"gopkg.in/yaml.v3"
 
 	app "github.com/tomatoCoderq/repeatro/internal/app"
 )
@@ -28,7 +31,45 @@ const (
 func main() {
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	cfg := config.MustLoad()
+	// Load .env variables from multiple possible locations
+	_ = godotenv.Load("/app/.env")
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load("../../.env")
+
+	// Determine config file path - check environment variable first, then fallback to defaults
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		// Try multiple possible locations for config file
+		possiblePaths := []string{
+			"config/config.yaml",
+			"../../config/config.yaml",
+			"/app/config/config.yaml",
+			"repeatro/config/config.yaml",
+		}
+		
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				configPath = path
+				break
+			}
+		}
+		
+		if configPath == "" {
+			panic(fmt.Errorf("could not find config file in any of the expected locations"))
+		}
+	}
+
+	// Read and expand config file
+	raw, err := os.ReadFile(configPath)
+	if err != nil {
+		panic(fmt.Errorf("could not read config file %s: %w", configPath, err))
+	}
+	expanded := os.ExpandEnv(string(raw))
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
+		panic(fmt.Errorf("could not unmarshal config file %s: %w", configPath, err))
+	}
 
 	log := setupLogger(cfg.Env)
 
@@ -68,14 +109,14 @@ func main() {
 		application.HttpServer.MustRun()
 	}()
 
-	//TODO: Завершить работу программы
+	// TODO: Завершить работу программы
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	<-stop
 
 	application.HttpServer.Stop()
-	//TODO: Add close for db
+	// TODO: Add close for db
 	log.Info("Gracefully stopped")
 
 	// storage := postgresql.New(cfg.ConnectionString, log)
@@ -117,11 +158,11 @@ func main() {
 
 }
 
-//start app
+// start app
 
-//end app
+// end app
 
-//logger
+// logger
 
 // TODO: technically each microservice should have separated main and current one should be divided into three
 // func main() {

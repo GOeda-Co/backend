@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	// "context"
 	"fmt"
 	"os/signal"
 	"syscall"
@@ -15,9 +15,11 @@ import (
 
 	// "net/http"
 
-	client "github.com/tomatoCoderq/stats/internal/clients/sso/grpc"
+	"github.com/joho/godotenv"
+	// client "github.com/tomatoCoderq/stats/internal/clients/sso/grpc"
 	"github.com/tomatoCoderq/stats/internal/config"
 	"github.com/tomatoCoderq/stats/internal/lib/security"
+	"gopkg.in/yaml.v3"
 
 	// userHttp "github.com/tomatoCoderq/stats/internal/controller/http"
 	// "github.com/tomatoCoderq/stats/internal/lib/security"
@@ -37,7 +39,45 @@ const (
 )
 
 func main() {
-	cfg := config.MustLoad()
+	// Load .env variables from multiple possible locations
+	_ = godotenv.Load("/app/.env")
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load("../../.env")
+
+	// Determine config file path - check environment variable first, then fallback to defaults
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		// Try multiple possible locations for config file
+		possiblePaths := []string{
+			"config/config.yaml",
+			"../../config/config.yaml",
+			"/app/config/config.yaml",
+			"stats/config/config.yaml",
+		}
+		
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				configPath = path
+				break
+			}
+		}
+		
+		if configPath == "" {
+			panic(fmt.Errorf("could not find config file in any of the expected locations"))
+		}
+	}
+
+	// Read and expand config file
+	raw, err := os.ReadFile(configPath)
+	if err != nil {
+		panic(fmt.Errorf("could not read config file %s: %w", configPath, err))
+	}
+	expanded := os.ExpandEnv(string(raw))
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
+		panic(fmt.Errorf("could not unmarshal config file %s: %w", configPath, err))
+	}
 
 	log := setupLogger(cfg.Env)
 
@@ -47,19 +87,19 @@ func main() {
 	)
 	log.Debug("debug messages are enabled")
 
-	ssoClient, err := client.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
-	if err != nil {
-		panic(err)
-	}
+	// ssoClient, err := client.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	fmt.Println(ssoClient)
+	// fmt.Println(ssoClient)
 
 	security := security.Security{
 		PrivateKey:      cfg.Secret,
 		ExpirationDelta: 600 * time.Minute,
 	}
 
-	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, security)
+	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, security)
 	go func() {
 		application.GRPCServer.MustRun()
 	}()

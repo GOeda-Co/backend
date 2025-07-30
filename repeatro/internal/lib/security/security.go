@@ -66,7 +66,6 @@ type CustomClaims struct {
 }
 
 func (s *Security) validateToken(tokenString string) (jwt.MapClaims, error) {
-	fmt.Println(s.PrivateKey)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(s.PrivateKey), nil
 	})

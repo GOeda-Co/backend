@@ -9,50 +9,51 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-type Config struct {  
-    Env            string     `yaml:"env" env-default:"local"`  
-    ConnectionString    string     `yaml:"connection_string" env-required:"true"`  
-    GRPC           GRPCConfig `yaml:"grpc"`  
-    MigrationsPath string  
-    TokenTTL       time.Duration `yaml:"token_ttl" env-default:"1h"`  
-}  
-
-type GRPCConfig struct {  
-    Address    string           `yaml:"address" env-default:":44044"`  
-    Timeout time.Duration `yaml:"timeout"`  
+type Config struct {
+	Env              string     `yaml:"env" env-default:"local"`
+	ConnectionString string     `yaml:"connection_string" env-required:"true"`
+	GRPC             GRPCConfig `yaml:"grpc" env-required:"true"`
+	MigrationsPath   string
+	TokenTTL         time.Duration `yaml:"token_ttl" env-default:"1h"`
 }
 
-func MustLoad() *Config {  
-    configPath := fetchConfigPath()  
-    if configPath == "" {  
-        panic("config path is empty") 
-    }  
+type GRPCConfig struct {
+	Address string        `yaml:"address" env-default:":44044"`
+	Port    int           `yaml:"port" env-default:"44044"`
+	Timeout time.Duration `yaml:"timeout"`
+}
 
-    // check if file exists
-    if _, err := os.Stat(configPath); os.IsNotExist(err) {
-        panic("config file does not exist: " + configPath)
-    }
+func MustLoad() *Config {
+	configPath := fetchConfigPath()
+	if configPath == "" {
+		panic("config path is empty")
+	}
 
-    var cfg Config
+	// check if file exists
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		panic("config file does not exist: " + configPath)
+	}
 
-    if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-        panic("config path is empty: " + err.Error())
-    }
+	var cfg Config
 
-    return &cfg
+	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
+		panic("config path is empty: " + err.Error())
+	}
+
+	return &cfg
 }
 
 func fetchConfigPath() string {
-    var res string
+	var res string
 
-    flag.StringVar(&res, "config", "", "path to config file")
-    flag.Parse()
-    
-    if res == "" {
-        fmt.Println("sdsdsd")
-        res = os.Getenv("CONFIG_PATH")
-    }
-    fmt.Println(res)
+	flag.StringVar(&res, "config", "", "path to config file")
+	flag.Parse()
 
-    return res
+	if res == "" {
+		fmt.Println("sdsdsd")
+		res = os.Getenv("CONFIG_PATH")
+	}
+	fmt.Println(res)
+
+	return res
 }

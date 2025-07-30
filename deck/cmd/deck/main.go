@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os/signal"
 	"syscall"
@@ -15,9 +14,11 @@ import (
 
 	// "net/http"
 
-	client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
+	"github.com/joho/godotenv"
+	// client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
 	"github.com/tomatoCoderq/deck/internal/config"
 	"github.com/tomatoCoderq/deck/internal/lib/security"
+	"gopkg.in/yaml.v3"
 
 	// userHttp "github.com/tomatoCoderq/card/internal/controller/http"
 	// "github.com/tomatoCoderq/card/internal/lib/security"
@@ -37,7 +38,45 @@ const (
 )
 
 func main() {
-	cfg := config.MustLoad()
+	// Load .env variables from multiple possible locations
+	_ = godotenv.Load("/app/.env")
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load("../../.env")
+
+	// Determine config file path - check environment variable first, then fallback to defaults
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		// Try multiple possible locations for config file
+		possiblePaths := []string{
+			"config/local.yaml",
+			"../../config/config.yaml",
+			"/app/config/config.yaml",
+			"deck/config/local.yaml",
+		}
+		
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				configPath = path
+				break
+			}
+		}
+		
+		if configPath == "" {
+			panic(fmt.Errorf("could not find config file in any of the expected locations"))
+		}
+	}
+
+	// Read and expand config file
+	raw, err := os.ReadFile(configPath)
+	if err != nil {
+		panic(fmt.Errorf("could not read config file %s: %w", configPath, err))
+	}
+	expanded := os.ExpandEnv(string(raw))
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
+		panic(fmt.Errorf("could not unmarshal config file %s: %w", configPath, err))
+	}
 
 	log := setupLogger(cfg.Env)
 
@@ -47,31 +86,31 @@ func main() {
 	)
 	log.Debug("debug messages are enabled")
 
-	ssoClient, err := client.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
-	if err != nil {
-		panic(err)
-	}
+	// ssoClient, err := client.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	fmt.Println(ssoClient)
+	// fmt.Println(ssoClient)
 
 	security := security.Security{
 		PrivateKey:      cfg.Secret,
 		ExpirationDelta: 600 * time.Minute,
 	}
- 
-	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, ssoClient, security)
-		go func() {
+
+	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, security)
+	go func() {
 		application.GRPCServer.MustRun()
 	}()
 
-	//TODO: Завершить работу программы
+	// TODO: Завершить работу программы
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
-	
+
 	<-stop
 
-	application.GRPCServer.Stop() 
-	//TODO: Add close for db
+	application.GRPCServer.Stop()
+	// TODO: Add close for db
 	log.Info("Gracefully stopped")
 
 	// storage := postgresql.New(cfg.ConnectionString, log)
@@ -113,11 +152,11 @@ func main() {
 
 }
 
-//start app
+// start app
 
-//end app
+// end app
 
-//logger
+// logger
 
 // TODO: technically each microservice should have separated main and current one should be divided into three
 // func main() {

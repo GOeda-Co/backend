@@ -1,0 +1,104 @@
+services:
+  # ───── Shared PostgreSQL ─────
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: repeatro
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # ───── Card Service ─────
+  card:
+    build:
+      context: ./card
+      dockerfile: Dockerfile
+    container_name: card-service
+    env_file:
+      - ./card/.env
+    volumes:
+      - ./card/config:/app/config
+      - ./card/.env:/app/.env
+    depends_on:
+      - postgres
+      - sso
+      - stat
+    ports:
+      - "${CARD_HOST_PORT}:${CARD_CONTAINER_PORT}"
+
+  # ───── Deck Service ─────
+  deck:
+    build:
+      context: ./deck
+      dockerfile: Dockerfile
+    container_name: deck-service
+    env_file:
+      - ./deck/.env
+    volumes:
+      - ./deck/config:/app/config
+      - ./deck/.env:/app/.env
+    depends_on:
+      - postgres
+    ports:
+      - "${DECK_HOST_PORT}:${DECK_CONTAINER_PORT}"
+
+  # ───── Repeatro Service ─────
+  repeatro:
+    build:
+      context: ./repeatro
+      dockerfile: Dockerfile
+    container_name: repeatro-service
+    env_file:
+      - ./repeatro/.env
+    volumes:
+      - ./repeatro/config:/app/config
+      - ./repeatro/.env:/app/.env
+    depends_on:
+      - postgres
+      - sso
+      - card
+      - deck
+      - stat
+    ports:
+      - "${REPEATRO_HOST_PORT}:${REPEATRO_CONTAINER_PORT}"
+
+    # ───── SSO Service ─────
+  sso:
+    build:
+      context: ./sso
+      dockerfile: Dockerfile
+    container_name: sso-service
+    env_file:
+      - ./sso/.env
+    volumes:
+      - ./sso/config:/app/config
+      - ./sso/.env:/app/.env
+    depends_on:
+      - postgres
+    ports:
+      - "${SSO_HOST_PORT}:${SSO_CONTAINER_PORT}"
+
+    # ───── Stats Service ─────
+  stat:
+    build:
+      context: ./stats
+      dockerfile: Dockerfile
+    container_name: stat-service
+    env_file:
+      - ./stats/.env
+    volumes:
+      - ./stats/config:/app/config
+      - ./stats/.env:/app/.env
+    depends_on:
+      - postgres
+      - sso
+    ports:
+      - "${STAT_HOST_PORT}:${STAT_CONTAINER_PORT}"
+
+volumes:
+  postgres_data:

@@ -1,22 +1,22 @@
-env: dev # "dev", "prod", "local"
+env: local
 
 connection_string: "host=${DB_HOST} port=${DB_PORT} user=${DB_USER} password=${DB_PASS} dbname=${DB_NAME} sslmode=disable"
 
 clients:
   card:
-    address: "card-service:${CARD_CONTAINER_PORT}"
+    address: ":${CARD_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
   deck:
-    address: "deck-service:${DECK_CONTAINER_PORT}"
+    address: ":${DECK_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
   sso:
-    address: "sso-service:${SSO_CONTAINER_PORT}"
+    address: ":${SSO_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
   stat:
-    address: "stat-service:${STAT_CONTAINER_PORT}"
+    address: ":${STAT_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
 

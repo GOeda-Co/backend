@@ -3,6 +3,7 @@ package services_test
 import (
 	"testing"
 	"time"
+	"context"
 	// "time"
 
 	"github.com/google/uuid"
@@ -154,7 +155,7 @@ func TestAddAnswers_ValidGradeAndOwner(t *testing.T) {
 	mockRepo.On("ReadCard", cardId).Return(card, nil)
 	mockRepo.On("PureUpdate", mock.AnythingOfType("*model.Card")).Return(nil)
 
-	err := service.AddAnswers(userId, answers)
+	err := service.AddAnswers(context.Background(), userId, answers)
 
 	assert.NoError(t, err)
 	mockRepo.AssertExpectations(t)
