@@ -131,7 +131,7 @@ func (s *Security) IsAdminMiddleware(client grpcsso.Client) gin.HandlerFunc {
 	}
 }
 
-func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnaryServerInterceptor {
+func (s *Security) AuthUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {

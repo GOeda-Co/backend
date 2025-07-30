@@ -3,14 +3,14 @@ env: dev  # "dev", "prod", "local"
 connection_string: "host=${DB_HOST} port=${DB_PORT} user=${DB_USER} password=${DB_PASS} dbname=${DB_NAME} sslmode=disable"
 
 clients:
-  sso:
-    address: "sso-service:${SSO_CONTAINER_PORT}"
-    timeout: 5s
-    retries_count: 3
   stat:
     address: "stat-service:${STAT_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
+  # sso:
+  #   address: "sso-service:${SSO_CONTAINER_PORT}"
+  #   timeout: 5s
+  #   retries_count: 3
 
 grpc:
   port: 50051

@@ -1,16 +1,34 @@
-env: "local"
-connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+env: local
+
+connection_string: "host=${DB_HOST} port=${DB_PORT} user=${DB_USER} password=${DB_PASS} dbname=${DB_NAME} sslmode=disable"
+
+clients:
+  card:
+    address: ":${CARD_CONTAINER_PORT}"
+    timeout: 5s
+    retries_count: 3
+  deck:
+    address: ":${DECK_CONTAINER_PORT}"
+    timeout: 5s
+    retries_count: 3
+  sso:
+    address: ":${SSO_CONTAINER_PORT}"
+    timeout: 5s
+    retries_count: 3
+  stat:
+    address: ":${STAT_CONTAINER_PORT}"
+    timeout: 5s
+    retries_count: 3
+
+grpc:
+  port: 50054
+  address: ":50054"
+  timeout: 10s
+
 http_server:
-  address: "0.0.0.0:8080"
-  portt: 8081
+  address: "0.0.0.0:8400"
+  port: 8400
   timeout: 4s
   idle_timeout: 30s
-clients:
-  sso:
-    address: "localhost:44044"
-  card:
-    address: "localhost:50051"
-  deck:
-    address: "localhost:50054"
-secret: "some very secret secret"
 
+secret: ${SECRET}

@@ -12,7 +12,7 @@ import (
 	"github.com/tomatoCoderq/card/internal/controller"
 	grpcCard "github.com/tomatoCoderq/card/internal/controller/grpc"
 
-	ssoClient "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
+	// ssoClient "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
 	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/lib/security"
 	"google.golang.org/grpc"
@@ -29,7 +29,6 @@ type App struct {
 func New(log *slog.Logger,
 	cardService controller.Card,
 	port int,
-	ssoClient *ssoClient.Client,
 	statClient *statClient.Client,
 	security security.Security) *App {
 	loggingOpts := []logging.Option{
@@ -49,7 +48,7 @@ func New(log *slog.Logger,
 	}
 
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		security.AuthUnaryInterceptor(ssoClient),
+		security.AuthUnaryInterceptor(),
 		recovery.UnaryServerInterceptor(recoveryOpts...),
 		logging.UnaryServerInterceptor(InterceptorLogger(log), loggingOpts...),
 	))

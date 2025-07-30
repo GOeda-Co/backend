@@ -12,7 +12,7 @@ import (
 	"github.com/tomatoCoderq/deck/internal/controller"
 	grpcDeck "github.com/tomatoCoderq/deck/internal/controller/grpc"
 
-	client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
+	// client "github.com/tomatoCoderq/deck/internal/clients/sso/grpc"
 	"github.com/tomatoCoderq/deck/internal/lib/security"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -28,7 +28,6 @@ type App struct {
 func New(log *slog.Logger,
 	deckService controller.Deck,
 	port int,
-	client *client.Client,
 	security security.Security) *App {
 	loggingOpts := []logging.Option{
 		logging.WithLogOnEvents(
@@ -47,7 +46,7 @@ func New(log *slog.Logger,
 	}
 
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		security.AuthUnaryInterceptor(client),
+		security.AuthUnaryInterceptor(),
 		recovery.UnaryServerInterceptor(recoveryOpts...),
 		logging.UnaryServerInterceptor(InterceptorLogger(log), loggingOpts...),
 	))

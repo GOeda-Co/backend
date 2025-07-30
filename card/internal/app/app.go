@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/tomatoCoderq/card/internal/app/grpc"
-	ssoClient "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
+	// ssoClient "github.com/tomatoCoderq/card/internal/clients/sso/grpc"
 	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/lib/security"
 	"github.com/tomatoCoderq/card/internal/repository/postgresql"
@@ -19,16 +19,15 @@ func New(
     log *slog.Logger,
     grpcPort int,
     storageAddress string,
-	ssoClient *ssoClient.Client,
 	statClient *statClient.Client,
 	security security.Security,
 ) *App {
 	storage := postgresql.New(storageAddress, log)
 
 	authService := services.New(log, storage, statClient)
-	grpcApp := grpcapp.New(log, authService, grpcPort, ssoClient, statClient, security)
+	grpcApp := grpcapp.New(log, authService, grpcPort, statClient, security)
 
-	return &App {
+	return &App{
 		GRPCServer: grpcApp,
 	}
 }

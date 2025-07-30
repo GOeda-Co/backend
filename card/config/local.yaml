@@ -1,15 +1,20 @@
-env: "local"
-connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
-http_server:
-  address: "0.0.0.0:8081"
-  timeout: 4s
-  idle_timeout: 30s
+env: local  # "dev", "prod", "local"
+
+connection_string: "host=${DB_HOST} port=${DB_PORT} user=${DB_USER} password=${DB_PASS} dbname=${DB_NAME} sslmode=disable"
+
 clients:
-  sso:
-    address: "localhost:44044"
   stat:
-    address: "localhost:50055"
-secret: "some very secret secret"
+    address: ":${STAT_CONTAINER_PORT}"
+    timeout: 5s
+    retries_count: 3
+  # sso:
+  #   address: "sso-service:${SSO_CONTAINER_PORT}"
+  #   timeout: 5s
+  #   retries_count: 3
+
 grpc:
   port: 50051
-  timeout: 10h
+  address: ":50051"
+  timeout: 1m
+
+secret: ${SECRET}
