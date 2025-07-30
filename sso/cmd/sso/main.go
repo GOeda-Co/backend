@@ -21,19 +21,44 @@ const (
 )
 
 func main() {
-	// Load .env variables
+	// Load .env variables from multiple possible locations
 	_ = godotenv.Load("/app/.env")
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load("../../.env")
 
-	// Read and expand config.yaml
-	raw, err := os.ReadFile("/app/config/config.yaml")
+	// Determine config file path - check environment variable first, then fallback to defaults
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		// Try multiple possible locations for config file
+		possiblePaths := []string{
+			"config/config.yaml",
+			"../../config/config.yaml",
+			"/app/config/config.yaml",
+			"sso/config/config.yaml",
+		}
+		
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				configPath = path
+				break
+			}
+		}
+		
+		if configPath == "" {
+			panic(fmt.Errorf("could not find config file in any of the expected locations"))
+		}
+	}
+
+	// Read and expand config file
+	raw, err := os.ReadFile(configPath)
 	if err != nil {
-		panic(fmt.Errorf("could not read config.yaml: %w", err))
+		panic(fmt.Errorf("could not read config file %s: %w", configPath, err))
 	}
 	expanded := os.ExpandEnv(string(raw))
 
 	var cfg config.Config
 	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
-		panic(fmt.Errorf("could not unmarshal config.yaml: %w", err))
+		panic(fmt.Errorf("could not unmarshal config file %s: %w", configPath, err))
 	}
 
 	// Initialize logger
@@ -42,6 +67,7 @@ func main() {
 	log.Debug("Initializing debug mode")
 
 	// Initialize app
+	fmt.Println(cfg.TokenTTL)
 	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, cfg.TokenTTL)
 
 	go func() {

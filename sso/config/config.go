@@ -12,7 +12,7 @@ import (
 type Config struct {  
     Env            string     `yaml:"env" env-default:"local"`  
     ConnectionString    string     `yaml:"connection_string" env-required:"true"`  
-    GRPC           GRPCConfig `yaml:"grpc"`  
+    GRPC           GRPCConfig `yaml:"grpc" env-required:"true"`  
     MigrationsPath string  
     TokenTTL       time.Duration `yaml:"token_ttl" env-default:"1h"`  
 }  

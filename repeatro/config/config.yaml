@@ -1,12 +1,6 @@
-env: dev  # "dev", "prod", "local"
+env: dev # "dev", "prod", "local"
 
-connection_string: >-
-  host=${DB_HOST}
-  port=${DB_PORT}
-  user=${DB_USER}
-  password=${DB_PASS}
-  dbname=${DB_NAME}
-  sslmode=disable
+connection_string: "host=${DB_HOST} port=${DB_PORT} user=${DB_USER} password=${DB_PASS} dbname=${DB_NAME} sslmode=disable"
 
 database:
   driver_name: postgres
@@ -16,27 +10,26 @@ database:
 
 clients:
   card:
-    address: card-service:${CARD_CONTAINER_PORT}
+    address: "card-service:${CARD_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
-
   deck:
-    address: deck-service:${DECK_CONTAINER_PORT}
+    address: "deck-service:${DECK_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
-
   sso:
-    address: sso-service:${SSO_CONTAINER_PORT}
+    address: ":${SSO_CONTAINER_PORT}"
+    # address: "sso-service:${SSO_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
-
   stat:
-    address: stat-service:${STAT_CONTAINER_PORT}
+    address: ":${STAT_CONTAINER_PORT}"
     timeout: 5s
     retries_count: 3
 
 grpc:
-  address: ":50051"
+  port: 50054
+  address: ":50054"
   timeout: 10s
 
 http_server:
@@ -44,17 +37,5 @@ http_server:
   port: 8070
   timeout: 4s
   idle_timeout: 30s
-
-keys:
-  private_key_file: "config/private.pem"
-  public_key_file:  "config/public.pem"
-
-auth:
-  access_token_ttl: 15m
-  refresh_token_ttl: 24h
-
-logger:
-  level: info   # debug / info / warn / error
-  format: text  # text / json
 
 secret: ${SECRET}
