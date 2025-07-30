@@ -172,7 +172,7 @@ func (s *ServerAPI) AddAnswers(ctx context.Context, in *cardv1.AddAnswersRequest
 		if err != nil {
 			return nil, status.Error(codes.Internal, "Failed during converting answer")
 		}
-
+		fmt.Printf("CONVER: %v", answerConverted)
 		answers = append(answers, *answerConverted)
 	}
 

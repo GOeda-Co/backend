@@ -32,6 +32,8 @@
     <li><a href="#about-the-project">About The Project</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#built-with">Built With</a></li>
+    <li><a href="#project-architecture-overview">Project Architecture Overview</a></li>
+    <li><a href="#database-architecture-overview">Database Architecture Overview</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
@@ -55,9 +57,7 @@ Repeatro is a modern, open-source vocabulary learning app inspired by Anki. It l
 - Spaced repetition for efficient vocabulary retention (SM2 algorithm)
 - JWT-based user authentication
 - Decks to organize vocabulary by topic or language
-- [In progress...] Language detection using [lingua-go][lingua-go]
-- [In progress...] RESTful API with [Swaggo][swaggo] auto-generated Swagger docs
-- PostgreSQL backend with [Goose][goose] for migrations
+- RESTful API with [Swaggo][swaggo] auto-generated Swagger docs
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -65,10 +65,151 @@ Repeatro is a modern, open-source vocabulary learning app inspired by Anki. It l
 
 - [Go](https://go.dev/)
 - [PostgreSQL](https://www.postgresql.org/)
-- [Goose][goose] (migrations)
 - [Swaggo][swaggo] (API docs)
 - [lingua-go][lingua-go] (language detection)
 - [JWT](https://jwt.io/) (authentication)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Project Architecture Overview
+
+Repeatro follows a **microservices architecture** pattern, designed for scalability, maintainability, and clear separation of concerns. The system is composed of 5 main services that communicate via gRPC for internal operations and expose a unified REST API through an API gateway.
+
+### Service Structure
+
+```
+┌─────────────────┐    HTTP/REST     ┌─────────────────┐
+│   Frontend      │ ◄────────────── │  Repeatro       │
+│   (Flutter)   │                 │  (API Gateway)  │
+└─────────────────┘                 └─────────────────┘
+                                             │
+                                        gRPC │
+                    ┌────────────────────────┼────────────────────────┐
+                    │                        │                        │
+                    ▼                        ▼                        ▼
+            ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+            │    SSO      │         │    Card     │         │    Deck     │
+            │  Service    │         │  Service    │         │  Service    │
+            │(Auth/Users) │         │(Vocabulary) │         │(Collections)│
+            └─────────────┘         └─────────────┘         └─────────────┘
+                    │                        │                        │
+                    │                        │                        │
+                    └────────────────────────┼────────────────────────┘
+                                             │
+                                             ▼
+                                    ┌─────────────┐
+                                    │    Stats    │
+                                    │  Service    │
+                                    │ (Analytics) │
+                                    └─────────────┘
+```
+
+### Service Responsibilities
+
+- **Repeatro (API Gateway)**: HTTP REST endpoints, request routing, response aggregation, Swagger documentation
+- **SSO Service**: User authentication, JWT token management, authorization, admin role management
+- **Card Service**: Individual vocabulary card CRUD, SM2 spaced repetition algorithm, card expiration logic
+- **Deck Service**: Card collections management, deck organization, card-to-deck relationships
+- **Stats Service**: Learning analytics, progress tracking, performance metrics, review history
+
+### Communication Patterns
+
+- **External Communication**: REST API with JSON payloads, CORS-enabled for web clients
+- **Internal Communication**: gRPC with Protocol Buffers, type-safe service contracts
+- **Authentication**: JWT tokens passed through gRPC metadata for service-to-service auth
+- **Service Discovery**: Direct addressing with configurable endpoints (Consul integration planned)
+
+### Technology Stack
+
+Each service follows **Clean Architecture** principles with consistent layering:
+- **Presentation Layer**: gRPC controllers, HTTP handlers
+- **Business Layer**: Domain services, business logic
+- **Data Layer**: GORM repositories, PostgreSQL integration
+- **Cross-cutting**: Logging (slog), security, configuration management
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Database Architecture Overview
+
+Repeatro implements a **database-per-service** pattern where each microservice owns its data domain while maintaining logical relationships through application-level coordination.
+
+### Database Design Principles
+
+- **Service Autonomy**: Each service manages its own PostgreSQL schema
+- **Eventual Consistency**: Cross-service data consistency through event-driven updates
+- **ACID Compliance**: Local transactions within service boundaries
+- **UUID Primary Keys**: Distributed system-friendly identifiers
+
+### Data Models & Relationships
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   SSO Service   │    │  Card Service   │    │  Deck Service   │
+│                 │    │                 │    │                 │
+│ ┌─────────────┐ │    │ ┌─────────────┐ │    │ ┌─────────────┐ │
+│ │    User     │ │    │ │    Card     │ │    │ │    Deck     │ │
+│ │ + ID (PK)   │ │    │ │ + CardId    │ │    │ │ + DeckId    │ │
+│ │ + Email     │ │    │ │ + CreatedBy │ │    │ │ + CreatedBy │ │
+│ │ + PassHash  │ │    │ │ + Word      │ │    │ │ + Name      │ │
+│ │ + IsAdmin   │ │    │ │ + Translation│ │   │ │ + Cards[]   │ │
+│ └─────────────┘ │    │ │ + Easiness  │ │    │ └─────────────┘ │
+│                 │    │ │ + Interval  │ │    │                 │
+│ ┌─────────────┐ │    │ │ + DeckID    │ │    └─────────────────┘
+│ │    App      │ │    │ │ + ExpiresAt │ │              │
+│ │ + ID (PK)   │ │    │ └─────────────┘ │              │
+│ │ + Name      │ │    │                 │              │
+│ │ + Secret    │ │    └─────────────────┘              │
+│ └─────────────┘ │              │                      │
+└─────────────────┘              │                      │
+                                 │                      │
+                                 ▼                      ▼
+                        ┌─────────────────┐    ┌─────────────────┐
+                        │  Stats Service  │    │ Cross-Service   │
+                        │                 │    │ Relationships   │
+                        │ ┌─────────────┐ │    │                 │
+                        │ │   Review    │ │    │ User 1:N Card   │
+                        │ │ + ResultId  │ │    │ User 1:N Deck   │
+                        │ │ + UserID    │ │    │ Deck 1:N Card   │
+                        │ │ + CardID    │ │    │ Card 1:N Review │
+                        │ │ + DeckId    │ │    │                 │
+                        │ │ + Grade     │ │    └─────────────────┘
+                        │ │ + CreatedAt │ │
+                        │ └─────────────┘ │
+                        └─────────────────┘
+```
+
+### Key Data Features
+
+**Spaced Repetition (SM2 Algorithm)**:
+- `Easiness`: Difficulty factor (default 2.5)
+- `Interval`: Days until next review
+- `RepetitionNumber`: Count of successful reviews
+- `ExpiresAt`: Automatic scheduling timestamp
+
+**Multi-tenancy & Security**:
+- UUID-based user identification across services
+- Cascade deletion for data cleanup
+- Row-level security through user ownership
+
+**Performance Optimizations**:
+- Indexed foreign keys (`DeckID`, `CreatedBy`)
+- Connection pooling (5-20 connections per service)
+- PostgreSQL array support for card tags
+- Time-based queries for expired cards
+
+### Data Consistency Strategy
+
+**Cross-Service Data Flow**:
+1. **User Operations**: SSO → Card/Deck (user validation via gRPC)
+2. **Learning Flow**: Card → Stats (review recording)
+3. **Deck Management**: Deck ↔ Card (bidirectional updates)
+
+**Consistency Mechanisms**:
+- **Synchronous**: Real-time user validation, immediate feedback
+- **Asynchronous**: Statistics aggregation, background processing
+- **Compensating Actions**: Rollback strategies for cross-service failures
+
+Each service uses GORM's `AutoMigrate` for schema management, with a planned migration to Goose for production-grade database versioning.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -519,10 +660,10 @@ Once running, you can interact with the API (REST/gRPC) for deck and card manage
 
 ## Roadmap
 
+- [ ] Goose migrations
 - [ ] Import/export via CSV, JSON
 - [ ] Enhance current stats
 - [ ] Language detection
-- [ ] RESTful API with Swagger docs
 - [ ] Simple frontend
 
 See the [open issues][issues-url] for a full list of proposed features (and known issues).

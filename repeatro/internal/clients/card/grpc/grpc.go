@@ -180,12 +180,14 @@ func (c *Client) AddAnswers(ctx context.Context, uid uuid.UUID, answers []*schem
 
 	convertedAnswers, err := convert.AnswersToProtoSchemes(answers)
 	if err != nil {
+		fmt.Printf("%s: %v", op, err)
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 	resp, err := c.api.AddAnswers(ctx, &cardv1.AddAnswersRequest{
 		Answers: convertedAnswers,
 	})
 	if err != nil {
+		fmt.Printf("%s: %v", op, err)
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 	return resp.Message, nil

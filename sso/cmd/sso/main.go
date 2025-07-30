@@ -68,7 +68,7 @@ func main() {
 
 	// Initialize app
 	fmt.Println(cfg.TokenTTL)
-	application := app.New(log, cfg.GRPC.Port, cfg.ConnectionString, cfg.TokenTTL)
+	application := app.New(log, cfg.GRPC.Address, cfg.ConnectionString, cfg.TokenTTL)
 
 	go func() {
 		application.GRPCServer.MustRun()
