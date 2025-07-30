@@ -82,6 +82,7 @@ func New(
 
 	decks := router.Group("/decks")
 	decks.Use(security.AuthMiddleware())
+
 	decks.Handle(http.MethodPost, "", ctrl.AddDeck)
 	decks.Handle(http.MethodGet, "", ctrl.ReadAllDecks)
 	decks.Handle(http.MethodGet, "/:id", ctrl.ReadDeck)
@@ -93,6 +94,7 @@ func New(
 
 	stats := router.Group("/stats")
 	stats.Use(security.AuthMiddleware())
+	
 	stats.Handle(http.MethodGet, "/average", ctrl.GetAverageGrade)
 	stats.Handle(http.MethodGet, "/count", ctrl.GetCardsReviewedCount)
 
