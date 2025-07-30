@@ -12,7 +12,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/GOeda-Co/backend">
-    <img src="https://avatars.githubusercontent.com/u/215998499?s=48&v=4" alt="Logo" width="80" height="80">
+    <img src="Logo.png" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">Repeatro – Anki-Style Vocabulary Learning App</h3>
   <p align="center">
@@ -74,37 +74,440 @@ Repeatro is a modern, open-source vocabulary learning app inspired by Anki. It l
 
 ## Getting Started
 
-To get a local copy up and running, follow these steps.
+This section guides you through setting up Repeatro using Docker for quick deployment and testing.
 
 ### Prerequisites
 
-- Go 1.18+
-- PostgreSQL 15+
-- [Goose][goose]
+Make sure you have the following installed on your system:
 
-### Installation
+- **Docker 27.3+** - [Download & Install Docker](https://docs.docker.com/get-docker/)
+- **Docker Compose** - Usually included with Docker Desktop
+- **Git** - [Download & Install Git](https://git-scm.com/downloads)
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/GOeda-Co/backend.git
-   cd repeatro
-   ```
-2. Install dependencies
-   ```sh
-   go mod tidy
-   ```
-3. Create the database
-   ```sql
-   CREATE DATABASE repeatro;
-   ```
-4. Set up Goose (see [Goose docs][goose] for details)
-5. Configure your environment (see `config.example.toml` in the root)
-6. Start the backend
-   ```sh
-   go run backend/card/cmd/card/main.go
-   # or for other services, adjust the path accordingly
-   ```
-7. (Optional) Use [air](https://github.com/cosmtrek/air) for auto server restart
+> **Note**: Go and PostgreSQL are not required for Docker setup as they run inside containers.
+
+### Quick Start with Docker
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/GOeda-Co/backend.git
+cd backend
+```
+
+#### 2. Environment Configuration
+
+Create environment files for all services:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+```
+
+Edit the `.env` file with your preferred settings:
+
+```properties
+# Database Configuration
+DB_HOST=postgres
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=repeatro
+
+# JWT Secret (generate a secure random string for production)
+SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Service Configuration
+CARD_HOST_PORT=50051
+CARD_CONTAINER_PORT=50051
+
+DECK_HOST_PORT=50054
+DECK_CONTAINER_PORT=50054
+
+REPEATRO_HOST_PORT=8080
+REPEATRO_CONTAINER_PORT=8080
+
+SSO_HOST_PORT=44044
+SSO_CONTAINER_PORT=44044
+
+STAT_HOST_PORT=50055
+STAT_CONTAINER_PORT=50055
+```
+
+> **Security Note**: Change the `SECRET` value to a strong, unique string for production deployments.
+
+#### 3. Start All Services
+
+Build and start all microservices with Docker Compose:
+
+```bash
+# Build and start all services in detached mode
+docker-compose up --build -d
+
+# View logs (optional)
+docker-compose logs -f
+```
+
+This command will:
+- Build Docker images for all microservices
+- Start PostgreSQL database
+- Launch all services (SSO, Card, Deck, Stats, Repeatro Gateway)
+- Set up networking between containers
+
+#### 4. Initialize the Application
+
+Add the application entry to the database (temporary setup step):
+
+```bash
+# Connect to the PostgreSQL container
+docker exec -it postgres psql -U postgres -d repeatro
+
+# Add the application record
+INSERT INTO apps (id, name, secret) VALUES (1, 'repeatro', 'your-super-secret-jwt-key-change-this-in-production');
+
+# Exit PostgreSQL
+\q
+```
+
+> **Important**: Replace `your-super-secret-jwt-key-change-this-in-production` with the same `SECRET` value from your `.env` file.
+
+#### 5. Verify Installation
+
+Check that all services are running:
+
+```bash
+# View running containers
+docker-compose ps
+
+# Check service health
+curl http://localhost:8080/swagger/index.html
+```
+
+You should see:
+- All services in "Up" status
+- Swagger documentation accessible at `http://localhost:8080/swagger/index.html`
+
+### Service Endpoints
+
+Once running, the following endpoints will be available:
+
+- **Repeatro Gateway (REST API)**: `http://localhost:8080`
+- **Swagger Documentation**: `http://localhost:8080/swagger/index.html`
+- **SSO Service (gRPC)**: `localhost:44044`
+- **Card Service (gRPC)**: `localhost:50051`
+- **Deck Service (gRPC)**: `localhost:50054`
+- **Stats Service (gRPC)**: `localhost:50055`
+- **PostgreSQL Database**: `localhost:5432`
+
+### Common Commands
+
+```bash
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (clears database)
+docker-compose down -v
+
+# View logs for specific service
+docker-compose logs -f repeatro
+
+# Rebuild specific service
+docker-compose up --build repeatro
+
+# Access database directly
+docker exec -it postgres psql -U postgres -d repeatro
+```
+
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Development
+
+This section describes how to set up and run the Repeatro project locally for development without Docker.
+
+### Prerequisites
+
+- **Go 1.24+** - [Download & Install Go](https://golang.org/dl/)
+- **PostgreSQL 15+** - [Download & Install PostgreSQL](https://www.postgresql.org/download/)
+- **Git** - [Download & Install Git](https://git-scm.com/downloads)
+
+### Local Development Setup
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/GOeda-Co/backend.git
+cd backend
+```
+
+#### 2. Database Setup
+
+Create a PostgreSQL database for the project:
+
+```sql
+-- Connect to PostgreSQL as superuser
+psql -U postgres
+
+-- Create database
+CREATE DATABASE repeatro;
+
+-- Create user (optional, or use existing postgres user)
+CREATE USER tomatocoder WITH PASSWORD 'postgres';
+GRANT ALL PRIVILEGES ON DATABASE repeatro TO tomatocoder;
+```
+
+#### 3. Environment Configuration
+
+Create a `.env` file in the root directory:
+
+```bash
+# Copy example environment file
+cp .env.example .env
+```
+
+Edit the `.env` file with your local settings:
+
+```properties
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=tomatocoder
+DB_PASS=postgres
+DB_NAME=repeatro
+
+# JWT Secret (generate a secure random string)
+SECRET=your-super-secret-jwt-key-here
+
+# Config Path - use local.yaml for development
+CONFIG_PATH=./config/local.yaml
+
+# Service Ports for Local Development
+CARD_HOST_PORT=50051
+CARD_CONTAINER_PORT=50051
+
+DECK_HOST_PORT=50054
+DECK_CONTAINER_PORT=50054
+
+REPEATRO_HOST_PORT=8080
+REPEATRO_CONTAINER_PORT=8080
+
+SSO_HOST_PORT=44044
+SSO_CONTAINER_PORT=44044
+
+STAT_HOST_PORT=50055
+STAT_CONTAINER_PORT=50055
+```
+
+#### 4. Local Configuration Files
+
+Each service needs a `local.yaml` configuration file. Create them in each service's config directory:
+
+**SSO Service** (`sso/config/local.yaml`):
+```yaml
+env: local
+
+connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+
+grpc:
+  port: 44044
+  address: ":44044"
+  timeout: 10s
+
+token_ttl: 15m
+secret: ${SECRET}
+```
+
+**Card Service** (`card/config/local.yaml`):
+```yaml
+env: local
+
+connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+
+grpc:
+  port: 50051
+  address: ":50051"
+  timeout: 10s
+
+clients:
+  sso:
+    address: ":44044"
+    timeout: 5s
+    retries_count: 3
+  stat:
+    address: ":50055"
+    timeout: 5s
+    retries_count: 3
+
+secret: ${SECRET}
+```
+
+**Deck Service** (`deck/config/local.yaml`):
+```yaml
+env: local
+
+connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+
+grpc:
+  port: 50054
+  address: ":50054"
+  timeout: 10s
+
+clients:
+  sso:
+    address: ":44044"
+    timeout: 5s
+    retries_count: 3
+
+secret: ${SECRET}
+```
+
+**Stats Service** (`stats/config/local.yaml`):
+```yaml
+env: local
+
+connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+
+grpc:
+  port: 50055
+  address: ":50055"
+  timeout: 10s
+
+clients:
+  sso:
+    address: ":44044"
+    timeout: 5s
+    retries_count: 3
+
+secret: ${SECRET}
+```
+
+**Repeatro Gateway** (`repeatro/config/local.yaml`):
+```yaml
+env: local
+
+connection_string: "host=localhost port=5432 user=tomatocoder password=postgres dbname=repeatro sslmode=disable"
+
+clients:
+  card:
+    address: ":50051"
+    timeout: 5s
+    retries_count: 3
+  deck:
+    address: ":50054"
+    timeout: 5s
+    retries_count: 3
+  sso:
+    address: ":44044"
+    timeout: 5s
+    retries_count: 3
+  stat:
+    address: ":50055"
+    timeout: 5s
+    retries_count: 3
+
+grpc:
+  port: 50054
+  address: ":50054"
+  timeout: 10s
+
+http_server:
+  address: "0.0.0.0:8080"
+  port: 8080
+  timeout: 4s
+  idle_timeout: 30s
+
+secret: ${SECRET}
+```
+
+#### 5. Install Dependencies
+
+Install Go dependencies for each service:
+
+```bash
+# SSO Service
+cd sso && go mod tidy && cd ..
+
+# Card Service
+cd card && go mod tidy && cd ..
+
+# Deck Service
+cd deck && go mod tidy && cd ..
+
+# Stats Service
+cd stats && go mod tidy && cd ..
+
+# Repeatro Gateway
+cd repeatro && go mod tidy && cd ..
+```
+
+#### 6. Running Services
+
+Start each service in separate terminal windows/tabs in the following order:
+
+**Terminal 1 - SSO Service:**
+```bash
+cd sso
+CONFIG_PATH=./config/local.yaml go run cmd/sso/main.go
+```
+
+**Terminal 2 - Stats Service:**
+```bash
+cd stats
+CONFIG_PATH=./config/local.yaml go run cmd/stats/main.go
+```
+
+**Terminal 3 - Card Service:**
+```bash
+cd card
+CONFIG_PATH=./config/local.yaml go run cmd/card/main.go
+```
+
+**Terminal 4 - Deck Service:**
+```bash
+cd deck
+CONFIG_PATH=./config/local.yaml go run cmd/deck/main.go
+```
+
+**Terminal 5 - Repeatro Gateway:**
+```bash
+cd repeatro
+CONFIG_PATH=./config/local.yaml go run cmd/repeatro/main.go
+```
+
+#### 8. Verify Setup
+
+Once all services are running, you can:
+
+1. **Check service health** by accessing individual gRPC ports
+2. **Access Swagger documentation** at `http://localhost:8080/swagger/index.html`
+3. **Test API endpoints** using the Swagger UI or curl commands
+
+### Development Tips
+
+- **Hot Reload**: Use tools like [air](https://github.com/cosmtrek/air) for automatic reloading during development
+- **Database Migrations**: GORM auto-migration is enabled, so tables will be created automatically
+- **Logging**: Set `env: local` in config files for detailed debug logging
+- **Service Discovery**: In local development, services communicate via `localhost:port`
+- **Config Changes**: Restart services after modifying `local.yaml` files
+
+### Troubleshooting
+
+**Port Already in Use:**
+```bash
+# Find process using port
+lsof -i :8080
+# Kill process
+kill -9 <PID>
+```
+
+**Database Connection Issues:**
+- Verify PostgreSQL is running: `brew services start postgresql` (macOS) or `sudo systemctl start postgresql` (Linux)
+- Check connection string in `local.yaml` files
+- Ensure database `repeatro` exists
+
+**JWT Signature Issues:**
+- Ensure all services use the same `SECRET` value in their config files
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
