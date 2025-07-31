@@ -17,7 +17,7 @@ type Review struct {
 }
 
 func (Review) TableName() string {
-  return "results" 
+	return "results"
 }
 
 func (r *Review) BeforeCreate(tx *gorm.DB) error {

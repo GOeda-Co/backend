@@ -115,11 +115,11 @@ func ProtoDeckToModel(deck *deckv1.Deck) (*model.Deck, error) {
 	}
 
 	return &model.Deck{
-		DeckId:      deckId,
-		CreatedBy:   createdBy,
-		CreatedAt:   deck.CreatedAt.AsTime(),
-		Name:        deck.Name,
+		DeckId:        deckId,
+		CreatedBy:     createdBy,
+		CreatedAt:     deck.CreatedAt.AsTime(),
+		Name:          deck.Name,
 		CardsQuantity: uint(deck.CardsQuantity),
-		Description: deck.Description,
+		Description:   deck.Description,
 	}, nil
 }

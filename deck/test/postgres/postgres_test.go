@@ -41,7 +41,6 @@ func TestAddAndReadDeck(t *testing.T) {
 	err := testRepo.AddDeck(deck)
 	assert.NoError(t, err)
 
-	
 	readDeck, err := testRepo.ReadDeck(deckId)
 	assert.NoError(t, err)
 	assert.Equal(t, "Test Deck", readDeck.Name)

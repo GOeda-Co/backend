@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	deckv1 "github.com/GOeda-Co/proto-contract/gen/go/deck"
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/deck/internal/controller"
@@ -84,7 +85,7 @@ func (s *DeckServerAPI) ReadDeck(ctx context.Context, in *deckv1.ReadDeckRequest
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Invalid deck ID")
 	}
-	
+
 	authUser, err := GetAuthUser(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "User not authenticated")
@@ -155,9 +156,9 @@ func (s *DeckServerAPI) ReadCardsFromDeck(ctx context.Context, in *deckv1.ReadDe
 		return nil, status.Error(codes.PermissionDenied, err.Error())
 	}
 
-	var protoCards []*deckv1.Card
+	var protoCards []*cardv1.Card
 	for _, card := range cards {
-		protoCards = append(protoCards, convert.ModelToProtoCard(&card))
+		protoCards = append(protoCards, convert.ModelToProto(&card))
 	}
 
 	return &deckv1.CardListResponse{Cards: protoCards}, nil

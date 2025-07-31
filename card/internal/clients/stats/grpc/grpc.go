@@ -143,12 +143,11 @@ func (c *Client) AddRecord(ctx context.Context, deckId, cid string, grade int) (
 	// Create new outgoing context with the token
 	outCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("authorization", token))
 
-
 	fmt.Println("INFODEK", deckId, cid, grade)
 
 	resp, err := c.api.AddRecording(outCtx, &statv1.AddRecordingRequest{
 		DeckId:    deckId,
-		CardId: cid,
+		CardId:    cid,
 		CreatedAt: timestamppb.New(time.Now()),
 		Grade:     int32(grade),
 	})

@@ -36,14 +36,14 @@ func main() {
 			"/app/config/config.yaml",
 			"sso/config/config.yaml",
 		}
-		
+
 		for _, path := range possiblePaths {
 			if _, err := os.Stat(path); err == nil {
 				configPath = path
 				break
 			}
 		}
-		
+
 		if configPath == "" {
 			panic(fmt.Errorf("could not find config file in any of the expected locations"))
 		}

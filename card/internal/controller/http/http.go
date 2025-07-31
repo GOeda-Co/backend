@@ -7,10 +7,10 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/tomatoCoderq/card/internal/controller"
 	"github.com/tomatoCoderq/card/internal/services/card"
 	"github.com/tomatoCoderq/card/pkg/model"
 	"github.com/tomatoCoderq/card/pkg/scheme"
-	"github.com/tomatoCoderq/card/internal/controller"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -77,7 +77,7 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("cannot parse uuid")
 	}
-	
+
 	return userId, nil
 }
 
@@ -140,20 +140,19 @@ func (cc CardController) UpdateCard(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
-	
+
 	userId, err := GetUserIdFromHeader(ctx)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	
+
 	var cardUpdate schemes.UpdateCardScheme
 	if err = ctx.ShouldBindJSON(&cardUpdate); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	fmt.Println("COMEHERE")
-
 
 	card, err := cc.CardService.UpdateCard(cardId, &cardUpdate, userId)
 	if err != nil {

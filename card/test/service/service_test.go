@@ -1,9 +1,9 @@
 package services_test
 
 import (
+	"context"
 	"testing"
 	"time"
-	"context"
 	// "time"
 
 	"github.com/google/uuid"
@@ -80,7 +80,7 @@ func TestAddCard(t *testing.T) {
 func TestReadAllCards(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo,  nil)
+	service := services.New(logger, mockRepo, nil)
 
 	userId := uuid.New()
 	expectedCards := []model.Card{{Word: "A"}, {Translation: "B"}}
@@ -96,7 +96,7 @@ func TestReadAllCards(t *testing.T) {
 func TestUpdateCard(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo,  nil)
+	service := services.New(logger, mockRepo, nil)
 
 	cardId := uuid.New()
 	userId := uuid.New()
@@ -117,7 +117,7 @@ func TestUpdateCard(t *testing.T) {
 func TestDeleteCard(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo,  nil)
+	service := services.New(logger, mockRepo, nil)
 
 	cardId := uuid.New()
 	userId := uuid.New()
@@ -135,7 +135,7 @@ func TestDeleteCard(t *testing.T) {
 func TestAddAnswers_ValidGradeAndOwner(t *testing.T) {
 	mockRepo := new(MockCardRepo)
 	logger := slog.Default()
-	service := services.New(logger, mockRepo,  nil)
+	service := services.New(logger, mockRepo, nil)
 
 	userId := uuid.New()
 	cardId := uuid.New()

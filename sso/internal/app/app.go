@@ -3,8 +3,8 @@ package app
 import (
 	"log/slog"
 	grpcapp "sso/internal/app/grpc"
-	"sso/internal/storage/postgresql"
 	"sso/internal/services/auth"
+	"sso/internal/storage/postgresql"
 	"time"
 )
 
@@ -13,10 +13,10 @@ type App struct {
 }
 
 func New(
-    log *slog.Logger,
-    grpcPort string,
-    storageAddress string,
-    tokenTTL time.Duration,
+	log *slog.Logger,
+	grpcPort string,
+	storageAddress string,
+	tokenTTL time.Duration,
 ) *App {
 	storage, err := postgresql.New(storageAddress, log)
 	if err != nil {
@@ -26,7 +26,7 @@ func New(
 	authService := auth.New(log, storage, storage, tokenTTL)
 	grpcApp := grpcapp.New(log, authService, grpcPort)
 
-	return &App {
+	return &App{
 		GRPCServer: grpcApp,
 	}
 }

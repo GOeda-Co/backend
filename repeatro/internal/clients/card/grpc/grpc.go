@@ -77,7 +77,7 @@ func (c *Client) AddCard(ctx context.Context, card *model.Card) (model.Card, err
 	const op = "grpc.AddCard"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
-	
+
 	resp, err := c.api.AddCard(ctx, &cardv1.AddCardRequest{
 		Card: convert.ModelToProto(card),
 	})
@@ -135,18 +135,18 @@ func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, c
 	const op = "grpc.UpdateCard"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
-	
+
 	resp, err := c.api.UpdateCard(ctx, &cardv1.UpdateCardRequest{
-		CardId: cid.String(),
-		UserId: uid.String(),
-		Word:  card.Word,
-		Translation: card.Translation,
-		Easiness: card.Easiness,
-		UpdatedAt: timestamppb.New(card.UpdatedAt),
-		Interval: int32(card.Interval),
-		ExpiresAt: timestamppb.New(card.ExpiresAt),
+		CardId:           cid.String(),
+		UserId:           uid.String(),
+		Word:             card.Word,
+		Translation:      card.Translation,
+		Easiness:         card.Easiness,
+		UpdatedAt:        timestamppb.New(card.UpdatedAt),
+		Interval:         int32(card.Interval),
+		ExpiresAt:        timestamppb.New(card.ExpiresAt),
 		RepetitionNumber: int32(card.RepetitionNumber),
-		Tags: card.Tags,
+		Tags:             card.Tags,
 	})
 	if err != nil {
 		return model.Card{}, fmt.Errorf("%s: %w", op, err)

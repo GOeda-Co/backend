@@ -20,7 +20,7 @@ type DeckRepository interface {
 	ReadDeck(deckId uuid.UUID) (*models.Deck, error)
 	DeleteDeck(deckId uuid.UUID) error
 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error
-	FindAllCardsInDeck(deckId uuid.UUID) ([]models.Card, error )
+	FindAllCardsInDeck(deckId uuid.UUID) ([]models.Card, error)
 }
 
 type Service struct {
@@ -72,9 +72,9 @@ func (ds *Service) ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]m
 		return nil, err
 	}
 	return cards, nil
-	
+
 }
-  
+
 func (ds *Service) DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error {
 	deck, err := ds.DeckRepository.ReadDeck(deckId)
 	if err != nil {

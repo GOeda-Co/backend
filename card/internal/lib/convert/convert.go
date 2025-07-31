@@ -1,10 +1,10 @@
 package convert
 
 import (
+	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/card/pkg/model"
 	schemes "github.com/tomatoCoderq/card/pkg/scheme"
-	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -55,7 +55,7 @@ func ModelToProto(card *model.Card) *cardv1.Card {
 	}
 }
 
-func ProtoToUpdateCardScheme(card *cardv1.UpdateCardRequest) *schemes.UpdateCardScheme{
+func ProtoToUpdateCardScheme(card *cardv1.UpdateCardRequest) *schemes.UpdateCardScheme {
 	return &schemes.UpdateCardScheme{
 		Word:             card.Word,
 		Translation:      card.Translation,

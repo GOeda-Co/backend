@@ -15,9 +15,9 @@ type App struct {
 }
 
 func New(
-    log *slog.Logger,
-    grpcPort int,
-    storageAddress string,
+	log *slog.Logger,
+	grpcPort int,
+	storageAddress string,
 	security security.Security,
 ) *App {
 	storage := postgresql.New(storageAddress, log)
@@ -25,7 +25,7 @@ func New(
 	authService := services.New(log, storage)
 	grpcApp := grpcapp.New(log, authService, grpcPort, security)
 
-	return &App {
+	return &App{
 		GRPCServer: grpcApp,
 	}
 }

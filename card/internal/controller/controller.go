@@ -16,4 +16,3 @@ type Card interface {
 	DeleteCard(id uuid.UUID, userId uuid.UUID) error
 	AddAnswers(ctx context.Context, userId uuid.UUID, answers []schemes.AnswerScheme) error
 }
-

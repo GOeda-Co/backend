@@ -11,8 +11,8 @@
 
 //	@securityDefinitions.basic	BasicAuth
 
-//	@externalDocs.description	OpenAPI
-//	@externalDocs.url			https://swagger.io/resources/open-api/
+// @externalDocs.description	OpenAPI
+// @externalDocs.url			https://swagger.io/resources/open-api/
 package app
 
 import (
@@ -63,13 +63,12 @@ func New(
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-
 	ctrl := httpRepeatro.New(log, ssoClient, cardClient, deckClient, statClient)
 	router.Handle(http.MethodPost, "/register", ctrl.Register)
 	router.Handle(http.MethodPost, "/login", ctrl.Login)
 	router.Handle(http.MethodGet, "/admin", ctrl.IsAdmin)
 
-	//TODO CHANGE 
+	//TODO CHANGE
 
 	cards := router.Group("/cards")
 	cards.Use(security.AuthMiddleware())
@@ -91,14 +90,12 @@ func New(
 	// decks.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
 	decks.Handle(http.MethodPost, "/:deck_id/cards/:card_id", ctrl.AddCardToDeck)
 	decks.Handle(http.MethodGet, "/:id/cards", ctrl.ReadCardsFromDeck)
-	
 
 	stats := router.Group("/stats")
 	stats.Use(security.AuthMiddleware())
-	
+
 	stats.Handle(http.MethodGet, "/average", ctrl.GetAverageGrade)
 	stats.Handle(http.MethodGet, "/count", ctrl.GetCardsReviewedCount)
-
 
 	httpServer := &http.Server{
 		Addr:    address,

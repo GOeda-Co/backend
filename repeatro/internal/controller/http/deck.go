@@ -181,4 +181,3 @@ func (cc *Controller) ReadCardsFromDeck(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, response)
 }
-
