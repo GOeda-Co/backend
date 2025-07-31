@@ -20,3 +20,8 @@ type LoginResponse struct {
 	Token   string `json:"token"`
 	Message string `json:"message"`
 }
+
+// AdminCheckResponse for admin status check
+type AdminCheckResponse struct {
+	IsAdmin bool `json:"is_admin"`
+}

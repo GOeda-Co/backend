@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
-	"fmt"
+	// "fmt"
 
 	"sso/internal/services/auth"
 	"sso/internal/storage"
@@ -115,15 +115,13 @@ func (s *serverAPI) IsAdmin(ctx context.Context, in *ssov1.IsAdminRequest) (*sso
 
 	isAdmin, err := s.auth.IsAdmin(ctx, userID)
 	if err != nil {
-		// Ошибку storage.ErrUserExists мы создадим ниже
-		if errors.Is(err, storage.ErrUserExists) {
-			return nil, status.Error(codes.AlreadyExists, "user already exists")
+		// Check if user not found
+		if errors.Is(err, storage.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
 		}
 
-		return nil, status.Error(codes.Internal, "failed to register user")
+		return nil, status.Error(codes.Internal, "failed to get user admin status")
 	}
-
-	fmt.Println("ASSAS", isAdmin)
 
 	return &ssov1.IsAdminResponse{IsAdmin: isAdmin}, nil
 }

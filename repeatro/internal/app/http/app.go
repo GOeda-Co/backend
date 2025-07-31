@@ -64,9 +64,10 @@ func New(
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 
-	ctrl := httpRepeatro.New(ssoClient, cardClient, deckClient, statClient)
+	ctrl := httpRepeatro.New(log, ssoClient, cardClient, deckClient, statClient)
 	router.Handle(http.MethodPost, "/register", ctrl.Register)
 	router.Handle(http.MethodPost, "/login", ctrl.Login)
+	router.Handle(http.MethodGet, "/admin", ctrl.IsAdmin)
 
 	//TODO CHANGE 
 
@@ -75,7 +76,7 @@ func New(
 
 	cards.Handle(http.MethodPost, "", ctrl.AddCard)
 	cards.Handle(http.MethodGet, "/learn", ctrl.ReadAllCardsToLearn)
-	cards.Handle(http.MethodGet, "", ctrl.ReadAllCardsByUser)
+	cards.Handle(http.MethodGet, "", ctrl.ReadAllCards)
 	cards.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
 	cards.Handle(http.MethodDelete, "/:id", ctrl.DeleteCard)
 	cards.Handle(http.MethodPost, "/answers", ctrl.AddAnswers)
