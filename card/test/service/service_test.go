@@ -15,8 +15,9 @@ import (
 	"log/slog"
 
 	services "github.com/tomatoCoderq/card/internal/services/card"
-	"github.com/tomatoCoderq/card/pkg/model"
-	schemes "github.com/tomatoCoderq/card/pkg/scheme"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
+	"github.com/GOeda-Co/proto-contract/model/card"
+	// schemes "github.com/tomatoCoderq/card/pkg/scheme"
 )
 
 type MockCardRepo struct {

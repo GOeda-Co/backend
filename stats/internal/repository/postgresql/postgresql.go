@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/tomatoCoderq/stats/pkg/model/review"
+	// "github.com/tomatoCoderq/stats/pkg/model/review"
+	model "github.com/GOeda-Co/proto-contract/model/review"
 
 	// "github.com/tomatoCoderq/card/pkg/scheme"
 

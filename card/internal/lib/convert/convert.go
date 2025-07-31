@@ -2,9 +2,10 @@ package convert
 
 import (
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
+	"github.com/GOeda-Co/proto-contract/model/card"
 	"github.com/google/uuid"
-	"github.com/tomatoCoderq/card/pkg/model"
-	schemes "github.com/tomatoCoderq/card/pkg/scheme"
+	// schemes "github.com/tomatoCoderq/card/pkg/scheme"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -52,6 +53,7 @@ func ModelToProto(card *model.Card) *cardv1.Card {
 		RepetitionNumber: int32(card.RepetitionNumber),
 		DeckId:           card.DeckID.String(),
 		Tags:             card.Tags,
+		IsPublic:         card.IsPublic,
 	}
 }
 
@@ -64,6 +66,7 @@ func ProtoToUpdateCardScheme(card *cardv1.UpdateCardRequest) *schemes.UpdateCard
 		ExpiresAt:        card.ExpiresAt.AsTime(),
 		RepetitionNumber: int(card.RepetitionNumber),
 		Tags:             card.Tags,
+		IsPublic:         card.IsPublic,
 	}
 }
 

@@ -13,7 +13,7 @@ import (
 	"github.com/tomatoCoderq/card/internal/config"
 
 	"github.com/tomatoCoderq/card/internal/repository/postgresql"
-	"github.com/tomatoCoderq/card/pkg/model"
+	"github.com/GOeda-Co/proto-contract/model/card"
 )
 
 var repo *postgresql.Repository

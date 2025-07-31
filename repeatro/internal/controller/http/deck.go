@@ -8,7 +8,8 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/swaggo/swag/example/celler/httputil"
 
-	model "github.com/tomatoCoderq/repeatro/pkg/models"
+	// model "github.com/tomatoCoderq/repeatro/pkg/models"
+	"github.com/GOeda-Co/proto-contract/model/deck"
 )
 
 // AddDeck godoc

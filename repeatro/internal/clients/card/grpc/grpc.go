@@ -11,9 +11,15 @@ import (
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 	"github.com/tomatoCoderq/repeatro/internal/lib/convert"
-	model "github.com/tomatoCoderq/repeatro/pkg/models"
-	"github.com/tomatoCoderq/repeatro/pkg/schemes"
+
+	// model "github.com/tomatoCoderq/repeatro/pkg/models"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	// "github.com/tomatoCoderq/repeatro/pkg/schemes"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
+
 	"google.golang.org/grpc"
+	// "google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"google.golang.org/grpc/codes"
@@ -73,7 +79,7 @@ func InterceptorLogger(l *slog.Logger) grpclog.Logger {
 	})
 }
 
-func (c *Client) AddCard(ctx context.Context, card *model.Card) (model.Card, error) {
+func (c *Client) AddCard(ctx context.Context, card *modelCard.Card) (modelCard.Card, error) {
 	const op = "grpc.AddCard"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -82,16 +88,16 @@ func (c *Client) AddCard(ctx context.Context, card *model.Card) (model.Card, err
 		Card: convert.ModelToProto(card),
 	})
 	if err != nil {
-		return model.Card{}, fmt.Errorf("%s: %w", op, err)
+		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
 	cardModel, err := convert.ProtoToModel(resp.Card)
 	if err != nil {
-		return model.Card{}, fmt.Errorf("%s: %w", op, err)
+		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return *cardModel, nil
 }
 
-func (c *Client) ReadAllCardsToLearn(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
+func (c *Client) ReadAllCardsToLearn(ctx context.Context, uid uuid.UUID) ([]modelCard.Card, error) {
 	const op = "grpc.ReadAllCards"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -100,7 +106,7 @@ func (c *Client) ReadAllCardsToLearn(ctx context.Context, uid uuid.UUID) ([]mode
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	cards := make([]model.Card, 0, len(resp.Cards))
+	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
 		card, err := convert.ProtoToModel(protoCard)
 		if err != nil {
@@ -111,7 +117,7 @@ func (c *Client) ReadAllCardsToLearn(ctx context.Context, uid uuid.UUID) ([]mode
 	return cards, nil
 }
 
-func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
+func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]modelCard.Card, error) {
 	const op = "grpc.ReadAllCards"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -120,7 +126,7 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card,
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	cards := make([]model.Card, 0, len(resp.Cards))
+	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
 		card, err := convert.ProtoToModel(protoCard)
 		if err != nil {
@@ -131,7 +137,50 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card,
 	return cards, nil
 }
 
-func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, card *schemes.UpdateCardScheme) (model.Card, error) {
+func (c *Client) SearchAllPublicCards(ctx context.Context) ([]modelCard.Card, error) {
+	const op = "grpc.SearchAllPublicCards"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+
+	resp, err := c.api.SearchAllPublicCards(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	cards := make([]modelCard.Card, 0, len(resp.Cards))
+	for _, protoCard := range resp.Cards {
+		card, err := convert.ProtoToModel(protoCard)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		cards = append(cards, *card)
+	}
+	return cards, nil
+}
+
+func (c *Client) SearchUserPublicCards(ctx context.Context, uid uuid.UUID) ([]modelCard.Card, error) {
+	const op = "grpc.SearchUserPublicCards"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+
+	resp, err := c.api.SearchUserPublicCards(ctx, &cardv1.SearchUserPublicCardsRequest{UserId: uid.String()})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	cards := make([]modelCard.Card, 0, len(resp.Cards))
+	for _, protoCard := range resp.Cards {
+		card, err := convert.ProtoToModel(protoCard)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		cards = append(cards, *card)
+	}
+	return cards, nil
+	// return nil, nil
+}
+
+
+
+func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, card *schemes.UpdateCardScheme) (modelCard.Card, error) {
 	const op = "grpc.UpdateCard"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -149,11 +198,11 @@ func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, c
 		Tags:             card.Tags,
 	})
 	if err != nil {
-		return model.Card{}, fmt.Errorf("%s: %w", op, err)
+		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
 	cardModel, err := convert.ProtoToModel(resp.Card)
 	if err != nil {
-		return model.Card{}, fmt.Errorf("%s: %w", op, err)
+		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return *cardModel, nil
 }

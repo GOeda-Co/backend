@@ -4,7 +4,9 @@ import (
 	"errors"
 	"log/slog"
 
-	models "github.com/tomatoCoderq/deck/pkg/model"
+	
+	"github.com/GOeda-Co/proto-contract/model/deck"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
 
 	// "repeatro/src/deck/internal/repository/postgresql"
 
@@ -14,13 +16,13 @@ import (
 var ErrUnauthorized = errors.New("you do not own this deck")
 
 type DeckRepository interface {
-	AddDeck(deck *models.Deck) error
-	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
-	ReadAllDecks() ([]models.Deck, error)
-	ReadDeck(deckId uuid.UUID) (*models.Deck, error)
+	AddDeck(deck *model.Deck) error
+	ReadAllDecksOfUser(userId uuid.UUID) ([]model.Deck, error)
+	ReadAllDecks() ([]model.Deck, error)
+	ReadDeck(deckId uuid.UUID) (*model.Deck, error)
 	DeleteDeck(deckId uuid.UUID) error
 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error
-	FindAllCardsInDeck(deckId uuid.UUID) ([]models.Card, error)
+	FindAllCardsInDeck(deckId uuid.UUID) ([]modelCard.Card, error)
 }
 
 type Service struct {
@@ -34,15 +36,15 @@ func New(log *slog.Logger, DeckRepository DeckRepository) *Service {
 }
 
 // type DeckServiceInterface interface {
-// 	AddCard(deck *models.Deck, userId uuid.UUID) (*models.Deck, error)
-// 	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)
-// 	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error)
-// 	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error)
+// 	AddCard(deck *model.Deck, userId uuid.UUID) (*model.Deck, error)
+// 	ReadAllDecksOfUser(userId uuid.UUID) ([]model.Deck, error)
+// 	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]model.Card, error)
+// 	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*model.Deck, error)
 // 	DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error
 // 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID, userId uuid.UUID) error
 // }
 
-func (ds *Service) AddDeck(deck *models.Deck) (*models.Deck, error) {
+func (ds *Service) AddDeck(deck *model.Deck) (*model.Deck, error) {
 	err := ds.DeckRepository.AddDeck(deck)
 	if err != nil {
 		return nil, err
@@ -50,11 +52,11 @@ func (ds *Service) AddDeck(deck *models.Deck) (*models.Deck, error) {
 	return deck, nil
 }
 
-func (ds *Service) ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error) {
+func (ds *Service) ReadAllDecksOfUser(userId uuid.UUID) ([]model.Deck, error) {
 	return ds.DeckRepository.ReadAllDecksOfUser(userId)
 }
 
-func (ds *Service) ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, error) {
+func (ds *Service) ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*model.Deck, error) {
 	deck, err := ds.DeckRepository.ReadDeck(deckId)
 	if err != nil {
 		return nil, err
@@ -66,7 +68,7 @@ func (ds *Service) ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*models.Deck, e
 	return deck, nil
 }
 
-func (ds *Service) ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]models.Card, error) {
+func (ds *Service) ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]modelCard.Card, error) {
 	cards, err := ds.DeckRepository.FindAllCardsInDeck(deckId)
 	if err != nil {
 		return nil, err

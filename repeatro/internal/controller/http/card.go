@@ -11,8 +11,10 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/swaggo/swag/example/celler/httputil"
 
-	model "github.com/tomatoCoderq/repeatro/pkg/models"
-	"github.com/tomatoCoderq/repeatro/pkg/schemes"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	_ "github.com/GOeda-Co/proto-contract/model/response"
+
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 )
 
 // AddCard godoc
@@ -39,7 +41,7 @@ func (cc *Controller) AddCard(ctx *gin.Context) {
 		return
 	}
 
-	var card model.Card
+	var card modelCard.Card
 	if err = json.Unmarshal(body, &card); err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -150,6 +152,57 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 		cc.log.Debug("First card", "card", response[0])
 	}
 
+	ctx.JSON(http.StatusOK, response)
+}
+
+// SearchAllPublicCards godoc
+//
+//	@Summary		Search all public cards
+//	@Description	Retrieves all public cards available in the system
+//	@Tags			cards
+//	@Produce		json
+//	@Success		200		{array}		model.Card
+//	@Failure		500		{object}	model.ErrorResponse	"Internal Server Error - Failed to search public cards"
+//	@Router			/cards/public [get]
+func (cc *Controller) SearchAllPublicCards(ctx *gin.Context) {
+
+}
+
+// SearchUserPublicCards godoc
+//
+//	@Summary		Search user's public cards
+//	@Description	Retrieves all public cards created by a specific user
+//	@Tags			cards
+//	@Produce		json
+//	@Param			user_id	path		string	true	"User ID"
+//	@Success		200		{array}		model.Card
+//	@Failure		400		{object}	model.ErrorResponse	"Bad Request - Invalid user ID format"
+//	@Failure		500		{object}	model.ErrorResponse	"Internal Server Error - Failed to search user's public cards"
+//	@Router			/cards/public/user/{user_id} [get]
+func (cc *Controller) SearchPublicCards(ctx *gin.Context) {
+	var uid string
+	var ok bool
+	uid, ok = ctx.GetQuery("user_id")
+	if !ok || uid == "" {
+		response, err := cc.cardClient.SearchAllPublicCards(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to search public cards: %v", err)})
+			return
+		}
+		ctx.JSON(http.StatusOK, response)
+		return
+	}
+	parsedUid, err := uuid.Parse(uid)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid user_id format: %v", err)})
+		return
+	}
+
+	response, err := cc.cardClient.SearchUserPublicCards(ctx, parsedUid)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to search public cards: %v", err)})
+		return
+	}
 	ctx.JSON(http.StatusOK, response)
 }
 

@@ -13,7 +13,9 @@ import (
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 	"github.com/tomatoCoderq/repeatro/internal/lib/convert"
-	model "github.com/tomatoCoderq/repeatro/pkg/models"
+	modelDeck "github.com/GOeda-Co/proto-contract/model/deck"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+
 
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -85,7 +87,7 @@ func InterceptorLogger(l *slog.Logger) grpclog.Logger {
 // 	ReadCardsFromDeck(ctx context.Context, in *ReadDeckRequest, opts ...grpc.CallOption) (*CardListResponse, error)
 // }
 
-func (c *Client) AddDeck(ctx context.Context, deck *model.Deck) (model.Deck, error) {
+func (c *Client) AddDeck(ctx context.Context, deck *modelDeck.Deck) (modelDeck.Deck, error) {
 	const op = "grpc.AddDeck"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -95,17 +97,17 @@ func (c *Client) AddDeck(ctx context.Context, deck *model.Deck) (model.Deck, err
 		Description: deck.Description,
 	})
 	if err != nil {
-		return model.Deck{}, fmt.Errorf("%s: %w", op, err)
+		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	deckModel, err := convert.ProtoDeckToModel(resp.Deck)
 	if err != nil {
-		return model.Deck{}, fmt.Errorf("%s: %w", op, err)
+		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return *deckModel, nil
 }
 
-func (c *Client) ReadAllDecks(ctx context.Context) ([]model.Deck, error) {
+func (c *Client) ReadAllDecks(ctx context.Context) ([]modelDeck.Deck, error) {
 	const op = "grpc.ReadAllDecks"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -115,7 +117,7 @@ func (c *Client) ReadAllDecks(ctx context.Context) ([]model.Deck, error) {
 		fmt.Printf("%s: %s", op, err.Error())
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	decks := make([]model.Deck, 0, len(resp.Decks))
+	decks := make([]modelDeck.Deck, 0, len(resp.Decks))
 	for _, protoDeck := range resp.Decks {
 		deck, err := convert.ProtoDeckToModel(protoDeck)
 		if err != nil {
@@ -126,7 +128,7 @@ func (c *Client) ReadAllDecks(ctx context.Context) ([]model.Deck, error) {
 	return decks, nil
 }
 
-func (c *Client) ReadDeck(ctx context.Context, did uuid.UUID) (model.Deck, error) {
+func (c *Client) ReadDeck(ctx context.Context, did uuid.UUID) (modelDeck.Deck, error) {
 	const op = "grpc.ReadDeck"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -135,11 +137,11 @@ func (c *Client) ReadDeck(ctx context.Context, did uuid.UUID) (model.Deck, error
 		DeckId: did.String(),
 	})
 	if err != nil {
-		return model.Deck{}, fmt.Errorf("%s: %w", op, err)
+		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
 	deckModel, err := convert.ProtoDeckToModel(resp.Deck)
 	if err != nil {
-		return model.Deck{}, fmt.Errorf("%s: %w", op, err)
+		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return *deckModel, nil
 }
@@ -173,7 +175,7 @@ func (c *Client) AddCardToDeck(ctx context.Context, did, cid uuid.UUID) error {
 	return nil
 }
 
-func (c *Client) ReadCardsFromDeck(ctx context.Context, did uuid.UUID) ([]model.Card, error) {
+func (c *Client) ReadCardsFromDeck(ctx context.Context, did uuid.UUID) ([]modelCard.Card, error) {
 	const op = "grpc.ReadCardsFromDeck"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -184,7 +186,7 @@ func (c *Client) ReadCardsFromDeck(ctx context.Context, did uuid.UUID) ([]model.
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	cards := make([]model.Card, 0, len(resp.Cards))
+	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
 		card, err := convert.ProtoToModel(&cardv1.Card{CardId: protoCard.CardId,
 			Word:             protoCard.Word,

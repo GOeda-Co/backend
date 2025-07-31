@@ -1,11 +1,11 @@
 basePath: /
 definitions:
-  github_com_tomatoCoderq_repeatro_pkg_models.AdminCheckResponse:
+  model.AdminCheckResponse:
     properties:
       is_admin:
         type: boolean
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_models.Card:
+  model.Card:
     properties:
       card_id:
         type: string
@@ -21,6 +21,8 @@ definitions:
         type: string
       interval:
         type: integer
+      is_public:
+        type: boolean
       repetition_number:
         type: integer
       tags:
@@ -34,11 +36,11 @@ definitions:
       word:
         type: string
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_models.Deck:
+  model.Deck:
     properties:
       cards:
         items:
-          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+          $ref: '#/definitions/model.Card'
         type: array
       cards_quantity:
         type: integer
@@ -53,33 +55,33 @@ definitions:
       name:
         type: string
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse:
+  model.ErrorResponse:
     properties:
       error:
         type: string
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_models.LoginResponse:
+  model.LoginResponse:
     properties:
       message:
         type: string
       token:
         type: string
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_models.RegisterResponse:
+  model.RegisterResponse:
     properties:
       message:
         type: string
       user_id:
         type: string
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_schemes.AnswerScheme:
+  scheme.AnswerScheme:
     properties:
       card_id:
         type: string
       grade:
         type: integer
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_schemes.LoginScheme:
+  scheme.LoginScheme:
     properties:
       app_id:
         type: integer
@@ -94,7 +96,7 @@ definitions:
     - email
     - password
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_schemes.RegisterScheme:
+  scheme.RegisterScheme:
     properties:
       email:
         type: string
@@ -110,7 +112,7 @@ definitions:
     - name
     - password
     type: object
-  github_com_tomatoCoderq_repeatro_pkg_schemes.UpdateCardScheme:
+  scheme.UpdateCardScheme:
     properties:
       easiness:
         type: number
@@ -118,6 +120,8 @@ definitions:
         type: string
       interval:
         type: integer
+      is_public:
+        type: boolean
       repetition_number:
         type: integer
       tags:
@@ -166,7 +170,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.AnswerScheme'
+            $ref: '#/definitions/scheme.AnswerScheme'
           type: array
       produces:
       - application/json
@@ -228,14 +232,14 @@ paths:
         name: card
         required: true
         schema:
-          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.UpdateCardScheme'
+          $ref: '#/definitions/scheme.UpdateCardScheme'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+            $ref: '#/definitions/model.Card'
         "400":
           description: Bad Request
           schema:
@@ -261,21 +265,21 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+              $ref: '#/definitions/model.Card'
             type: array
         "400":
           description: Bad Request - Invalid user_id format
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "403":
           description: Forbidden - User without admin rights cannot access other users'
             cards
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to get user ID or retrieve cards
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Get all cards
       tags:
       - cards
@@ -289,19 +293,19 @@ paths:
         name: card
         required: true
         schema:
-          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+          $ref: '#/definitions/model.Card'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+            $ref: '#/definitions/model.Card'
         "500":
           description: Internal Server Error - Failed to read request body, get user
             ID, or add card
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Add a card
       tags:
       - cards
@@ -315,13 +319,61 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+              $ref: '#/definitions/model.Card'
             type: array
         "500":
           description: Internal Server Error - Failed to get user ID or retrieve cards
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Get all cards to learn
+      tags:
+      - cards
+  /cards/public:
+    get:
+      description: Retrieves all public cards available in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Card'
+            type: array
+        "500":
+          description: Internal Server Error - Failed to search public cards
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Search all public cards
+      tags:
+      - cards
+  /cards/public/user/{user_id}:
+    get:
+      description: Retrieves all public cards created by a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Card'
+            type: array
+        "400":
+          description: Bad Request - Invalid user ID format
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error - Failed to search user's public cards
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Search user's public cards
       tags:
       - cards
   /deck:
@@ -335,22 +387,22 @@ paths:
         name: deck
         required: true
         schema:
-          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+          $ref: '#/definitions/model.Deck'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+            $ref: '#/definitions/model.Deck'
         "400":
           description: Bad Request - Invalid request body
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to get user ID or add deck
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Add a deck
       tags:
       - decks
@@ -374,11 +426,11 @@ paths:
         "400":
           description: Bad Request - Invalid card ID or deck ID format
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to add card to deck
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Add card to deck
       tags:
       - decks
@@ -397,11 +449,11 @@ paths:
         "400":
           description: Bad Request - Invalid deck ID format
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to delete deck
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Delete a deck
       tags:
       - decks
@@ -417,15 +469,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+            $ref: '#/definitions/model.Deck'
         "400":
           description: Bad Request - Invalid deck ID format
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to read deck
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Get deck by ID
       tags:
       - decks
@@ -443,16 +495,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card'
+              $ref: '#/definitions/model.Card'
             type: array
         "400":
           description: Bad Request - Invalid deck ID format
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to get cards from deck
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Get cards from deck
       tags:
       - decks
@@ -466,12 +518,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck'
+              $ref: '#/definitions/model.Deck'
             type: array
         "500":
           description: Internal Server Error - Failed to retrieve decks
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Get all decks
       tags:
       - decks
@@ -492,15 +544,15 @@ paths:
         "200":
           description: Admin status check result
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.AdminCheckResponse'
+            $ref: '#/definitions/model.AdminCheckResponse'
         "400":
           description: Bad Request - user_id is required or invalid format
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to check admin status
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Checks if user is admin
       tags:
       - sso
@@ -515,22 +567,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.LoginScheme'
+          $ref: '#/definitions/scheme.LoginScheme'
       produces:
       - application/json
       responses:
         "200":
           description: User logged in successfully
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.LoginResponse'
+            $ref: '#/definitions/model.LoginResponse'
         "400":
           description: Bad Request - Invalid request body
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to login user
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Logs in a user
       tags:
       - sso
@@ -545,22 +597,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.RegisterScheme'
+          $ref: '#/definitions/scheme.RegisterScheme'
       produces:
       - application/json
       responses:
         "200":
           description: User registered successfully
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.RegisterResponse'
+            $ref: '#/definitions/model.RegisterResponse'
         "400":
           description: Bad Request - Invalid request body
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to register user
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Registers new user to the system
       tags:
       - sso
@@ -578,11 +630,11 @@ paths:
         "400":
           description: Bad Request - Failed to get user ID from context
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to get average grade
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Get user's average grade
       tags:
       - statistics
@@ -600,11 +652,11 @@ paths:
         "400":
           description: Bad Request - Failed to get user ID from context
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error - Failed to get reviewed cards
           schema:
-            $ref: '#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse'
+            $ref: '#/definitions/model.ErrorResponse'
       summary: Get user's cards reviewed count
       tags:
       - statistics

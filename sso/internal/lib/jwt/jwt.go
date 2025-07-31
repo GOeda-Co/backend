@@ -1,13 +1,15 @@
 package jwt
 
 import (
-	"sso/internal/models"
+	// "sso/internal/models"
+	models "github.com/GOeda-Co/proto-contract/model/user"
+	modelsApp "github.com/GOeda-Co/proto-contract/model/app"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func NewToken(user models.User, app models.App, duration time.Duration) (string, error) {
+func NewToken(user models.User, app modelsApp.App, duration time.Duration) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// Добавляем в токен всю необходимую информацию

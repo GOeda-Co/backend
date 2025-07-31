@@ -6,8 +6,11 @@ import (
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	deckv1 "github.com/GOeda-Co/proto-contract/gen/go/deck"
 	"github.com/google/uuid"
-	"github.com/tomatoCoderq/repeatro/pkg/models"
-	schemes "github.com/tomatoCoderq/repeatro/pkg/schemes"
+	// "github.com/tomatoCoderq/repeatro/pkg/models"
+	model "github.com/GOeda-Co/proto-contract/model/card"
+	modelDeck "github.com/GOeda-Co/proto-contract/model/deck"
+	// schemes "github.com/tomatoCoderq/repeatro/pkg/schemes"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -38,6 +41,7 @@ func ProtoToModel(card *cardv1.Card) (*model.Card, error) {
 		RepetitionNumber: int(card.RepetitionNumber),
 		DeckID:           deckId,
 		Tags:             card.Tags,
+		IsPublic:         card.IsPublic,
 	}, nil
 }
 
@@ -55,6 +59,7 @@ func ModelToProto(card *model.Card) *cardv1.Card {
 		RepetitionNumber: int32(card.RepetitionNumber),
 		DeckId:           card.DeckID.String(),
 		Tags:             card.Tags,
+		IsPublic:         card.IsPublic,
 	}
 }
 
@@ -104,7 +109,7 @@ func AnswersToProtoSchemes(answers []*schemes.AnswerScheme) ([]*cardv1.Answer, e
 	return result, nil
 }
 
-func ProtoDeckToModel(deck *deckv1.Deck) (*model.Deck, error) {
+func ProtoDeckToModel(deck *deckv1.Deck) (*modelDeck.Deck, error) {
 	deckId, err := uuid.Parse(deck.DeckId)
 	if err != nil {
 		return nil, err
@@ -114,7 +119,7 @@ func ProtoDeckToModel(deck *deckv1.Deck) (*model.Deck, error) {
 		return nil, err
 	}
 
-	return &model.Deck{
+	return &modelDeck.Deck{
 		DeckId:        deckId,
 		CreatedBy:     createdBy,
 		CreatedAt:     deck.CreatedAt.AsTime(),

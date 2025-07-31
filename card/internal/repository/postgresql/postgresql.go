@@ -4,8 +4,10 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/tomatoCoderq/card/pkg/model"
-	"github.com/tomatoCoderq/card/pkg/scheme"
+	// "github.com/tomatoCoderq/card/pkg/model"
+	"github.com/GOeda-Co/proto-contract/model/card"
+	// "github.com/tomatoCoderq/card/pkg/scheme"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"

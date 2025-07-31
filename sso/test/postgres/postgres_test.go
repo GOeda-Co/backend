@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"math/rand/v2"
 
-	// "math/rand"
-
 	"log/slog"
 	"os"
 	"testing"
 
 	"sso/config"
-	"sso/internal/models"
-	_ "sso/internal/models"
+
+	modelsApp "github.com/GOeda-Co/proto-contract/model/app"
 	"sso/internal/storage/postgresql"
 
 	"github.com/google/uuid"
@@ -62,7 +60,7 @@ func TestApp(t *testing.T) {
 
 	id := rand.IntN(1000) + 1000 + rand.IntN(rand.IntN(1000))
 
-	app := models.App{
+	app := modelsApp.App{
 		ID:     id,
 		Name:   "Repeatro",
 		Secret: "some secret",

@@ -8,7 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	services "github.com/tomatoCoderq/deck/internal/services/deck"
-	"github.com/tomatoCoderq/deck/pkg/model"
+	// schemes "github.com/GOeda-Co/proto-contract/scheme/deck"
+	"github.com/GOeda-Co/proto-contract/model/deck"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
 )
 
 type MockDeckRepository struct {
@@ -45,9 +47,9 @@ func (m *MockDeckRepository) AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) e
 	return args.Error(0)
 }
 
-func (m *MockDeckRepository) FindAllCardsInDeck(deckId uuid.UUID) ([]model.Card, error) {
+func (m *MockDeckRepository) FindAllCardsInDeck(deckId uuid.UUID) ([]modelCard.Card, error) {
 	args := m.Called(deckId)
-	return args.Get(0).([]model.Card), args.Error(1)
+	return args.Get(0).([]modelCard.Card), args.Error(1)
 }
 
 func TestAddDeck(t *testing.T) {

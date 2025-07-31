@@ -6,15 +6,16 @@ import (
 	"fmt"
 
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 	"github.com/google/uuid"
 	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/controller"
 	"github.com/tomatoCoderq/card/internal/lib/convert"
 	"github.com/tomatoCoderq/card/internal/lib/security"
-	schemes "github.com/tomatoCoderq/card/pkg/scheme"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func GetAuthUser(ctx context.Context) (*security.AuthUser, error) {
@@ -110,6 +111,34 @@ func (s *ServerAPI) ReadAllCardsByUser(ctx context.Context, in *cardv1.ReadAllCa
 	}
 
 	return &cardv1.ReadAllCardsByUserResponse{Cards: protoCards}, nil
+}
+
+func (s *ServerAPI) SearchAllPublicCards(ctx context.Context, in *emptypb.Empty) (*cardv1.SearchAllPublicCardsResponse, error) {
+	cards, err := s.service.SearchAllPublicCards()
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to search public cards")
+	}
+
+	var protoCards []*cardv1.Card
+	for _, card := range cards {
+		protoCards = append(protoCards, convert.ModelToProto(&card))
+	}
+
+	return &cardv1.SearchAllPublicCardsResponse{Cards: protoCards}, nil
+}
+
+func (s *ServerAPI) SearchUserPublicCards(ctx context.Context, in *cardv1.SearchUserPublicCardsRequest) (*cardv1.SearchUserPublicCardsResponse, error) {
+	cards, err := s.service.SearchUserPublicCards(in.UserId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to search user public cards")
+	}
+
+	var protoCards []*cardv1.Card
+	for _, card := range cards {
+		protoCards = append(protoCards, convert.ModelToProto(&card))
+	}
+
+	return &cardv1.SearchUserPublicCardsResponse{Cards: protoCards}, nil
 }
 
 func (s *ServerAPI) UpdateCard(ctx context.Context, in *cardv1.UpdateCardRequest) (*cardv1.UpdateCardResponse, error) {

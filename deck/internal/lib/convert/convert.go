@@ -4,7 +4,8 @@ import (
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	deckv1 "github.com/GOeda-Co/proto-contract/gen/go/deck"
 	"github.com/google/uuid"
-	"github.com/tomatoCoderq/deck/pkg/model"
+	"github.com/GOeda-Co/proto-contract/model/deck"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -35,7 +36,7 @@ func ModelToProtoDeck(deck *model.Deck) *deckv1.Deck {
 	}
 }
 
-func ProtoToModel(card *cardv1.Card) (*model.Card, error) {
+func ProtoToModel(card *cardv1.Card) (*modelCard.Card, error) {
 	cardId, err := uuid.Parse(card.CardId)
 	if err != nil {
 		return nil, err
@@ -49,7 +50,7 @@ func ProtoToModel(card *cardv1.Card) (*model.Card, error) {
 		return nil, err
 	}
 
-	return &model.Card{
+	return &modelCard.Card{
 		CardId:           cardId,
 		CreatedBy:        createdBy,
 		CreatedAt:        card.CreatedAt.AsTime(),
@@ -65,7 +66,7 @@ func ProtoToModel(card *cardv1.Card) (*model.Card, error) {
 	}, nil
 }
 
-func ModelToProto(card *model.Card) *cardv1.Card {
+func ModelToProto(card *modelCard.Card) *cardv1.Card {
 	return &cardv1.Card{
 		CardId:           card.CardId.String(),
 		CreatedBy:        card.CreatedBy.String(),

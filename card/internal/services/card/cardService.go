@@ -11,8 +11,9 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"github.com/tomatoCoderq/card/internal/lib/sm2"
-	"github.com/tomatoCoderq/card/pkg/model"
-	schemes "github.com/tomatoCoderq/card/pkg/scheme"
+
+	"github.com/GOeda-Co/proto-contract/model/card"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 )
 
 type CardRepository interface {

@@ -7,7 +7,9 @@ import (
 	"log/slog"
 	"time"
 
-	"sso/internal/models"
+	// "sso/internal/models"
+	models "github.com/GOeda-Co/proto-contract/model/user"
+	modelsApp "github.com/GOeda-Co/proto-contract/model/app"
 	"sso/internal/storage"
 
 	"github.com/google/uuid"
@@ -48,7 +50,7 @@ func New(connString string, log *slog.Logger) (*Storage, error) {
 	}
 
 	// AutoMigrate your models
-	if err := DB.AutoMigrate(&models.User{}, &models.App{}); err != nil {
+	if err := DB.AutoMigrate(&models.User{}, &modelsApp.App{}); err != nil {
 		return nil, fmt.Errorf("%s: migration error: %w", op, err)
 	}
 
@@ -86,9 +88,9 @@ func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 	return user, err
 }
 
-func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
+func (s *Storage) App(ctx context.Context, appID int) (modelsApp.App, error) {
 	const op = "Storage.postgresql.App"
-	var app models.App
+	var app modelsApp.App
 	err := s.DB.Where("ID = ?", appID).Find(&app).Error
 	return app, err
 }

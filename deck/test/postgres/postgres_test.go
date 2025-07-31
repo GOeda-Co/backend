@@ -10,7 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tomatoCoderq/deck/internal/config"
 	"github.com/tomatoCoderq/deck/internal/repository/postgresql"
-	"github.com/tomatoCoderq/deck/pkg/model"
+	"github.com/GOeda-Co/proto-contract/model/deck"
+
 )
 
 var testRepo *postgresql.Repository

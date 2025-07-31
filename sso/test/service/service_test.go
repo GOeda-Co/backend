@@ -6,7 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"sso/internal/models"
+	// "sso/internal/models"
+	models "github.com/GOeda-Co/proto-contract/model/user"
+	modelsApp "github.com/GOeda-Co/proto-contract/model/app"
 	"sso/internal/services/auth"
 
 	"github.com/google/uuid"
@@ -38,9 +40,9 @@ type MockAppProvider struct {
 	mock.Mock
 }
 
-func (m *MockAppProvider) App(ctx context.Context, appID int) (models.App, error) {
+func (m *MockAppProvider) App(ctx context.Context, appID int) (modelsApp.App, error) {
 	args := m.Called(ctx, appID)
-	return args.Get(0).(models.App), args.Error(1)
+	return args.Get(0).(modelsApp.App), args.Error(1)
 }
 
 func TestRegisterNewUser_Success(t *testing.T) {
@@ -80,7 +82,7 @@ func TestLogin_Success(t *testing.T) {
 		PassHash: hashed,
 	}
 
-	app := models.App{ID: 1, Name: "TestApp"}
+	app := modelsApp.App{ID: 1, Name: "TestApp"}
 
 	mockStorage.On("User", ctx, email).Return(user, nil)
 	mockApps.On("App", ctx, 1).Return(app, nil)
