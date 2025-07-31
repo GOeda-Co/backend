@@ -68,7 +68,6 @@ func (cc *Controller) AddCard(ctx *gin.Context) {
 func (cc *Controller) ReadAllCardsToLearn(ctx *gin.Context) {
 	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
-		fmt.Println("USS", userId)
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -184,7 +183,6 @@ func (cc *Controller) UpdateCard(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
-	fmt.Println("COMEHERE")
 
 	card, err := cc.cardClient.UpdateCard(ctx, uid, cardId, &cardUpdate)
 	if err != nil {
@@ -192,7 +190,6 @@ func (cc *Controller) UpdateCard(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("CO", card)
 	ctx.JSON(http.StatusOK, card)
 }
 

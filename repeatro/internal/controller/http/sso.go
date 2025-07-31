@@ -28,15 +28,13 @@ func (c *Controller) Register(ctx *gin.Context) {
 	var registerScheme schemes.RegisterScheme
 
 	if err := ctx.ShouldBindBodyWithJSON(&registerScheme); err != nil {
-		fmt.Println("HERE")
 		ctx.JSON(400, gin.H{"error": fmt.Sprintf("Invalid request body: %v", err)})
+		return
 	}
-
-	fmt.Println(registerScheme)
 
 	uid, err := c.ssoClient.Register(ctx.Request.Context(), registerScheme.Email, registerScheme.Password, registerScheme.Name)
 	if err != nil {
-		fmt.Println("Err", err)
+		c.log.Debug("Failed to register user", "error", err)
 		ctx.JSON(500, gin.H{"error": fmt.Sprintf("Failed to register user: %v", err)})
 		return
 	}
@@ -63,6 +61,7 @@ func (c *Controller) Login(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindBodyWithJSON(&loginScheme); err != nil {
 		ctx.JSON(400, gin.H{"error": "Invalid request body"})
+		return
 	}
 
 	token, err := c.ssoClient.Login(ctx.Request.Context(), loginScheme.Email, loginScheme.Password, loginScheme.AppId)
@@ -72,7 +71,7 @@ func (c *Controller) Login(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{
 		"token":   token,
-		"message": "User registered successfully",
+		"message": "User logged in successfully",
 	})
 }
 
