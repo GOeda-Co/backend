@@ -74,7 +74,7 @@ func (c *Client) Register(ctx context.Context, email string, password string, na
 	resp, err := c.api.Register(ctx, &ssov1.RegisterRequest{
 		Email:    email,
 		Password: password,
-		Name: name,
+		Name:     name,
 	})
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
@@ -104,7 +104,6 @@ func (c *Client) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 		UserId: userID.String(),
 	})
 	if err != nil {
-		fmt.Println("errro?")
 		return false, fmt.Errorf("%s: %w", op, err)
 	}
 

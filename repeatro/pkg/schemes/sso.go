@@ -12,4 +12,3 @@ type LoginScheme struct {
 	Password string `json:"password" validate:"required,min=5,max=64"`
 	AppId int32 `json:"app_id" validate:"required"`
 }
-

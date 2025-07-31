@@ -91,7 +91,7 @@ func (c *Client) AddCard(ctx context.Context, card *model.Card) (model.Card, err
 	return *cardModel, nil
 }
 
-func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
+func (c *Client) ReadAllCardsToLearn(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
 	const op = "grpc.ReadAllCards"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
@@ -111,7 +111,7 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card,
 	return cards, nil
 }
 
-func (c *Client) ReadAllCardsByUser(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
+func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]model.Card, error) {
 	const op = "grpc.ReadAllCards"
 
 	ctx = withToken(ctx, ctx.Value("token").(string))

@@ -1,7 +1,6 @@
 package postgresql
 
 import (
-_	"fmt"
 	"log/slog"
 	"time"
 

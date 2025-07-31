@@ -1,0 +1,16 @@
+env: local  # "dev", "prod", "local"
+
+connection_string: "host=${DB_HOST} port=${DB_PORT} user=${DB_USER} password=${DB_PASS} dbname=${DB_NAME} sslmode=disable"
+
+clients:
+  stat:
+    address: ":${STAT_CONTAINER_PORT}"
+    timeout: 5s
+    retries_count: 3
+
+grpc:
+  port: 50051
+  address: ":50051"
+  timeout: 1m
+
+secret: ${SECRET}
