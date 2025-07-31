@@ -92,12 +92,12 @@ func (cr Repository) CountReviewedCards(uid, deckId uuid.UUID, startTime, endTim
 
 func (cr Repository) AddRecord(uid, deckId, cardId uuid.UUID, createdAt time.Time, grade int) (string, error) {
 	// var review model.Review
-	review := model.Review {
-		UserID: uid,
-		DeckId: deckId,
-		CardID: cardId,
+	review := model.Review{
+		UserID:    uid,
+		DeckId:    deckId,
+		CardID:    cardId,
 		CreatedAt: createdAt,
-		Grade: int32(grade),
+		Grade:     int32(grade),
 	}
 	if err := cr.db.Create(&review).Error; err != nil {
 		return "", err

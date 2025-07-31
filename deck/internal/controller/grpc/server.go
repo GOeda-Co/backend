@@ -85,7 +85,7 @@ func (s *DeckServerAPI) ReadDeck(ctx context.Context, in *deckv1.ReadDeckRequest
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Invalid deck ID")
 	}
-	
+
 	authUser, err := GetAuthUser(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "User not authenticated")

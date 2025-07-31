@@ -21,6 +21,7 @@ import (
 )
 
 type contextKey string
+
 const userContextKey contextKey = "authUser"
 
 func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
@@ -48,11 +49,10 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 }
 
 type AuthUser struct {
-	ID uuid.UUID
-	email string
+	ID      uuid.UUID
+	email   string
 	IsAdmin bool
 }
-
 
 type Security struct {
 	PrivateKey      string
@@ -159,7 +159,6 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 			return nil, status.Errorf(codes.Internal, "failed during parsing user ID: %v", err)
 		}
 
-
 		email, ok := jwtClaimsMap["email"].(string)
 		if !ok || email == "" {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
@@ -170,18 +169,17 @@ func (s *Security) AuthUnaryInterceptor(ssoClient *grpcsso.Client) grpc.UnarySer
 			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		}
 
-		authUser := AuthUser {
+		authUser := AuthUser{
 			uidUUID,
 			email,
 			isAdmin,
-		}	
+		}
 
 		ctx = context.WithValue(ctx, userContextKey, authUser)
 
 		return handler(ctx, req)
 	}
 }
-
 
 // func New(
 //     log *slog.Logger,

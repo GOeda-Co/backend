@@ -8,8 +8,8 @@ import (
 
 	_ "github.com/swaggo/swag/example/celler/httputil"
 
-	"github.com/tomatoCoderq/repeatro/pkg/schemes"
 	_ "github.com/tomatoCoderq/repeatro/pkg/models"
+	"github.com/tomatoCoderq/repeatro/pkg/schemes"
 )
 
 // Register godoc

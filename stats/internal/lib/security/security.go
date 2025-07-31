@@ -21,6 +21,7 @@ import (
 )
 
 type contextKey string
+
 const UserContextKey contextKey = "authUser"
 
 func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
@@ -48,11 +49,10 @@ func GetUserIdFromContext(ctx *gin.Context) (uuid.UUID, error) {
 }
 
 type AuthUser struct {
-	ID uuid.UUID
-	email string
+	ID      uuid.UUID
+	email   string
 	IsAdmin bool
 }
-
 
 type Security struct {
 	PrivateKey      string
@@ -141,24 +141,23 @@ func (s *Security) AuthUnaryInterceptor() grpc.UnaryServerInterceptor {
 		if len(authHeaders) == 0 {
 			return nil, status.Errorf(codes.Unauthenticated, "authorization token is not supplied")
 		}
-		
+
 		token := strings.TrimPrefix(authHeaders[0], "Bearer ")
 		jwtClaimsMap, err := s.validateToken(token)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid token: %v", err)
 		}
-		
+
 		uid, ok := jwtClaimsMap["uid"].(string)
 		if !ok || uid == "" {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		}
-		
+
 		uidUUID, err := uuid.Parse(uid)
 		if err != nil {
 			fmt.Println("TOK", token)
 			return nil, status.Errorf(codes.Internal, "failed during parsing user ID: %v", err)
 		}
-
 
 		email, ok := jwtClaimsMap["email"].(string)
 		if !ok || email == "" {
@@ -170,17 +169,16 @@ func (s *Security) AuthUnaryInterceptor() grpc.UnaryServerInterceptor {
 		// 	return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
 		// }
 
-		authUser := AuthUser {
-			ID: uidUUID,
+		authUser := AuthUser{
+			ID:    uidUUID,
 			email: email,
-		}	
+		}
 
 		ctx = context.WithValue(ctx, UserContextKey, authUser)
 
 		return handler(ctx, req)
 	}
 }
-
 
 // func New(
 //     log *slog.Logger,

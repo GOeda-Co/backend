@@ -3,13 +3,12 @@ package app
 import (
 	"log/slog"
 
-	"github.com/tomatoCoderq/repeatro/internal/lib/security"
 	httpApp "github.com/tomatoCoderq/repeatro/internal/app/http"
-	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
 	cardClient "github.com/tomatoCoderq/repeatro/internal/clients/card/grpc"
 	deckClient "github.com/tomatoCoderq/repeatro/internal/clients/deck/grpc"
+	ssoClient "github.com/tomatoCoderq/repeatro/internal/clients/sso/grpc"
 	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
-
+	"github.com/tomatoCoderq/repeatro/internal/lib/security"
 )
 
 type App struct {
@@ -17,9 +16,9 @@ type App struct {
 }
 
 func New(
-    log *slog.Logger,	
+	log *slog.Logger,
 	port int,
-    address string,
+	address string,
 	ssoClient *ssoClient.Client,
 	cardClient *cardClient.Client,
 	deckClient *deckClient.Client,
@@ -28,7 +27,7 @@ func New(
 ) *App {
 	grpcApp := httpApp.New(log, port, address, ssoClient, cardClient, deckClient, statClient, security)
 
-	return &App {
+	return &App{
 		HttpServer: grpcApp,
 	}
 }

@@ -5,7 +5,6 @@ import (
 	models "github.com/tomatoCoderq/deck/pkg/model"
 )
 
-
 type Deck interface {
 	AddDeck(deck *models.Deck) (*models.Deck, error)
 	ReadAllDecksOfUser(userId uuid.UUID) ([]models.Deck, error)

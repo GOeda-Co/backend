@@ -69,15 +69,15 @@ func InterceptorLogger(l *slog.Logger) grpclog.Logger {
 }
 
 func (c *Client) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
-    const op = "grpc.IsAdmin"
+	const op = "grpc.IsAdmin"
 
-    resp, err := c.api.IsAdmin(ctx, &ssov1.IsAdminRequest{
-        UserId: userID.String(),
-    })
-    if err != nil {
+	resp, err := c.api.IsAdmin(ctx, &ssov1.IsAdminRequest{
+		UserId: userID.String(),
+	})
+	if err != nil {
 		fmt.Println("errro?")
-        return false, fmt.Errorf("%s: %w", op, err)
-    }
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
 
-    return resp.IsAdmin, nil
+	return resp.IsAdmin, nil
 }

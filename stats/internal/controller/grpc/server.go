@@ -9,9 +9,9 @@ import (
 	"github.com/tomatoCoderq/stats/internal/lib/security"
 
 	statsv1 "github.com/GOeda-Co/proto-contract/gen/go/stats"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -47,7 +47,6 @@ func (s *ServerAPI) GetAverageGrade(ctx context.Context, in *statsv1.GetAverageG
 		return nil, status.Error(codes.InvalidArgument, "TimeRange is not specified")
 	}
 
-	
 	avGrage, err := s.service.GetAverageGrade(in.UserId, in.DeckId, in.TimeRange)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Error happened: %v", err))
@@ -96,10 +95,10 @@ func (s *ServerAPI) AddRecording(ctx context.Context, in *statsv1.AddRecordingRe
 
 	authUser, err := GetAuthUser(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))}
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))
+	}
 
-
-	reviewId, err := s.service.AddRecord(authUser.ID, in.DeckId, in.CardId, in.CreatedAt.AsTime(), int(in.Grade));
+	reviewId, err := s.service.AddRecord(authUser.ID, in.DeckId, in.CardId, in.CreatedAt.AsTime(), int(in.Grade))
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Error happened: %v", err))
 	}

@@ -91,7 +91,6 @@ func TestLogin_Success(t *testing.T) {
 	assert.NotEmpty(t, token)
 }
 
-
 func TestLogin_InvalidPassword(t *testing.T) {
 	mockStorage := new(MockUserStorage)
 	mockApps := new(MockAppProvider)

@@ -11,16 +11,15 @@ import (
 type Config struct {
 	Env              string `yaml:"env" env-default:"local"`
 	ConnectionString string `yaml:"connection_string" env-required:"true"`
-	Secret           string        `yaml:"secret" env-required:"true"`
+	Secret           string `yaml:"secret" env-required:"true"`
 	// Clients          ClientsConfig `yaml:"clients"`
-	GRPC             GRPCConfig    `yaml:"grpc"`
+	GRPC GRPCConfig `yaml:"grpc"`
 }
 
 type GRPCConfig struct {
 	Port    int           `yaml:"port"`
 	Timeout time.Duration `yaml:"timeout"`
 }
-
 
 /* FOR CLIENT CONFIGURATION (FUTURE USE)
 type Client struct {

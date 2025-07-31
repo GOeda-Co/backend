@@ -21,7 +21,7 @@ type Storage struct {
 
 func New(connString string, log *slog.Logger) (*Storage, error) {
 	const (
-		op        = "storage.postgresql.New"
+		op         = "storage.postgresql.New"
 		maxRetries = 10
 		retryDelay = 4 * time.Second
 	)
@@ -73,7 +73,7 @@ func (s *Storage) SaveUser(ctx context.Context, email string, hashPass []byte, n
 	user := models.User{
 		Email:    email,
 		PassHash: hashPass,
-		Name: name,
+		Name:     name,
 	}
 	err = s.DB.Create(&user).Error
 	return user.ID, err

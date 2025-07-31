@@ -35,15 +35,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-
 func TestSaveAndGetUser(t *testing.T) {
 	ctx := context.Background()
-	
+
 	email := "test@example.com"
 	name := "Test User"
 	pass := []byte("hashedpassword123")
-	
-	
+
 	uid, err := repo.SaveUser(ctx, email, pass, name)
 	if err != nil {
 		fmt.Printf("%v\n", err)
@@ -65,8 +63,8 @@ func TestApp(t *testing.T) {
 	id := rand.IntN(1000) + 1000 + rand.IntN(rand.IntN(1000))
 
 	app := models.App{
-		ID:        id,
-		Name:      "Repeatro",
+		ID:     id,
+		Name:   "Repeatro",
 		Secret: "some secret",
 	}
 	err := repo.DB.Create(&app).Error

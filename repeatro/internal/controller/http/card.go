@@ -103,7 +103,7 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 	var uuidUserId uuid.UUID
 	queryUserId := ctx.Query("user_id")
 	cc.log.Debug("Query User ID", "queryUserId", queryUserId)
-	
+
 	if queryUserId != "" {
 		if uuidUserId, err = uuid.Parse(queryUserId); err != nil {
 			cc.log.Debug("Error parsing query user ID", "error", err)
@@ -112,14 +112,14 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 		}
 		cc.log.Debug("Parsed Query User ID", "uuidUserId", uuidUserId)
 	}
-	
+
 	isAdmin, err := GetIsAdminFromContext(ctx)
 	if err != nil {
 		cc.log.Debug("Error getting admin status (defaulting to false)", "error", err)
 		isAdmin = false // Default to false if admin check fails
 	}
 	cc.log.Debug("Is Admin", "isAdmin", isAdmin)
-	
+
 	var targetUserId uuid.UUID
 
 	if queryUserId != "" {
@@ -144,12 +144,12 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	
+
 	cc.log.Debug("Cards response", "length", len(response))
 	if len(response) > 0 {
 		cc.log.Debug("First card", "card", response[0])
 	}
-	
+
 	ctx.JSON(http.StatusOK, response)
 }
 

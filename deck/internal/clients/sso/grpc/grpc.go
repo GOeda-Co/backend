@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"time"
 
+	ssov1 "github.com/GOeda-Co/proto-contract/gen/go/sso"
 	"github.com/google/uuid"
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	ssov1 "github.com/GOeda-Co/proto-contract/gen/go/sso"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -69,14 +69,14 @@ func InterceptorLogger(l *slog.Logger) grpclog.Logger {
 }
 
 func (c *Client) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
-    const op = "grpc.IsAdmin"
+	const op = "grpc.IsAdmin"
 
-    resp, err := c.api.IsAdmin(ctx, &ssov1.IsAdminRequest{
-        UserId: userID.String(),
-    })
-    if err != nil {
-        return false, fmt.Errorf("%s: %w", op, err)
-    }
+	resp, err := c.api.IsAdmin(ctx, &ssov1.IsAdminRequest{
+		UserId: userID.String(),
+	})
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
 
-    return resp.IsAdmin, nil
+	return resp.IsAdmin, nil
 }

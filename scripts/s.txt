@@ -2,4 +2,4 @@ find . -type f -name go.mod -execdir \
   bash -c 'echo "→ Updating in $(pwd)"; go get -u ./...; go mod tidy' \;
 
 find . -type f -name go.mod -execdir \
-  bash -c 'echo "→ Cleaning $(pwd)"; go mod tidy; go ' \;
+  bash -c 'echo "→ Cleaning $(pwd)"; go mod tidy; go fmt ./...' \;

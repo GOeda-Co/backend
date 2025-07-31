@@ -53,14 +53,14 @@ func main() {
 			"/app/config/config.yaml",
 			"deck/config/local.yaml",
 		}
-		
+
 		for _, path := range possiblePaths {
 			if _, err := os.Stat(path); err == nil {
 				configPath = path
 				break
 			}
 		}
-		
+
 		if configPath == "" {
 			panic(fmt.Errorf("could not find config file in any of the expected locations"))
 		}
