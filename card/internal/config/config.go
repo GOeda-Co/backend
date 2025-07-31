@@ -1,11 +1,15 @@
 package config
 
 import (
-	"log"
+	"fmt"
+	// "log"
 	"os"
 	"time"
 
-	"github.com/ilyakaznacheev/cleanenv"
+	// "github.com/ilyakaznacheev/cleanenv"
+	// "github.com/tomatoCoderq/card/internal/config"
+	"gopkg.in/yaml.v3"
+	
 	// "github.com/joho/godotenv"
 )
 
@@ -41,25 +45,54 @@ type ClientsConfig struct {
 }
 
 func MustLoad() *Config {
-	// if err := godotenv.Load("../../.env"); err != nil {
-	// 	log.Fatal("Error loading .env file: " + err.Error())
-	// }
-
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		log.Fatal("CONFIG_PATH is not set")
+		possiblePaths := []string{
+			"config/config.yaml",
+			"../../config/local.yaml",
+			"../../config/config.yaml",
+			"/app/config/config.yaml",
+			"card/config/config.yaml",
+		}
+
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				configPath = path
+				break
+			}
+		}
+		if configPath == "" {
+			panic(fmt.Errorf("could not find config file in any of the expected locations"))
+		}
 	}
 
-	// check if file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", configPath)
+	fmt.Println("Using config file:", configPath)
+
+	// Read and expand config file
+	raw, err := os.ReadFile(configPath)
+	if err != nil {
+		panic(fmt.Errorf("could not read config file %s: %w", configPath, err))
 	}
+	expanded := os.ExpandEnv(string(raw))
 
 	var cfg Config
-
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("cannot read config: %s", err)
+	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
+		panic(fmt.Errorf("could not unmarshal config file %s: %w", configPath, err))
 	}
+
+	fmt.Println(cfg.ConnectionString)
+	// configPath := os.Getenv("CONFIG_PATH")
+	// if configPath == "" {
+	// 	log.Fatal("CONFIG_PATH is not set")
+	// }
+	// // check if file exists
+	// if _, err := os.Stat(configPath); os.IsNotExist(err) {
+	// 	log.Fatalf("config file does not exist: %s", configPath)
+	// }
+
+	// var cfg Config
+
+
 
 	return &cfg
 }

@@ -81,6 +81,29 @@ func (cr Repository) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) 
 	return cards, err
 }
 
+func (cr Repository) SearchAllPublicCards() ([]model.Card, error) {
+	var cards []model.Card
+	err := cr.db.
+		Where("is_public = ?", true).
+		Find(&cards).Error
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
+func (cr Repository) SearchUserPublicCards(userId uuid.UUID) ([]model.Card, error) {
+	var cards []model.Card
+	err := cr.db.
+		Where("is_public = ?", true).
+		Where("created_by = ?", userId).
+		Find(&cards).Error
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
 func (cr Repository) ReadCard(cardId uuid.UUID) (*model.Card, error) {
 	var card model.Card
 	err := cr.db.Where("card_id = ?", cardId).Find(&card).Error

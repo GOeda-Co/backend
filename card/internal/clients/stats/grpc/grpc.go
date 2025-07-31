@@ -116,8 +116,6 @@ func (c *Client) GetCardsReviewedCount(ctx context.Context, uid, deckId string, 
 		TimeRange: timeRange,
 	})
 
-	fmt.Println("ASASASA")
-
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -142,8 +140,6 @@ func (c *Client) AddRecord(ctx context.Context, deckId, cid string, grade int) (
 
 	// Create new outgoing context with the token
 	outCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("authorization", token))
-
-	fmt.Println("INFODEK", deckId, cid, grade)
 
 	resp, err := c.api.AddRecording(outCtx, &statv1.AddRecordingRequest{
 		DeckId:    deckId,

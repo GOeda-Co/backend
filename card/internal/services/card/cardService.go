@@ -10,32 +10,37 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc/metadata"
 
-	statClient "github.com/tomatoCoderq/card/internal/clients/stats/grpc"
 	"github.com/tomatoCoderq/card/internal/lib/sm2"
 	"github.com/tomatoCoderq/card/pkg/model"
-	"github.com/tomatoCoderq/card/pkg/scheme"
+	schemes "github.com/tomatoCoderq/card/pkg/scheme"
 )
 
 type CardRepository interface {
 	AddCard(card *model.Card) error
 	ReadAllCards(userId uuid.UUID) ([]model.Card, error)
 	ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error)
+	SearchAllPublicCards() ([]model.Card, error)
+	SearchUserPublicCards(userId uuid.UUID) ([]model.Card, error)
 	ReadCard(cardId uuid.UUID) (*model.Card, error)
 	PureUpdate(card *model.Card) error
 	UpdateCard(card *model.Card, cardUpdate *schemes.UpdateCardScheme) (*model.Card, error)
 	DeleteCard(cardId uuid.UUID) error
 }
 
+type StatsClient interface {
+	AddRecord(ctx context.Context, deckId, cardId string, grade int) (string, error)
+}
+
 type Card struct {
 	log            *slog.Logger
 	cardRepository CardRepository
-	statClient     *statClient.Client
+	statClient     StatsClient
 }
 
 func New(
 	log *slog.Logger,
 	cardRepo CardRepository,
-	statClient *statClient.Client,
+	statClient StatsClient,
 ) *Card {
 	return &Card{
 		log:            log,
@@ -116,17 +121,14 @@ func (cm Card) AddAnswers(ctx context.Context, userId uuid.UUID, answers []schem
 			return fmt.Errorf("invalid grade")
 		}
 
-		fmt.Println("ANSID", answer.CardId)
-
 		card, err := cm.cardRepository.ReadCard(answer.CardId)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("CARD", card)
 		// NOTE: If expire_time not reached yet the card will be just skipped
 		if time.Now().Compare(card.ExpiresAt) == -1 {
-			fmt.Println("SKIPPED", time.Now(), card.ExpiresAt)
+			cm.log.Info("Card not expired yet, skipping", "cardId", card.CardId, "expiresAt", card.ExpiresAt)
 			continue
 		}
 
@@ -150,30 +152,42 @@ func (cm Card) AddAnswers(ctx context.Context, userId uuid.UUID, answers []schem
 		card.RepetitionNumber = reviewResult.Repetitions
 
 		if err = cm.cardRepository.PureUpdate(card); err != nil {
-			fmt.Println("WTF")
 			return err
 		}
 
-		fmt.Println("NEWCARD", card)
-
-		// result := model.Review {
-		// 	UserID: card.CreatedBy,
-		// 	CardID: card.CardId,
-		// 	Grade: int32(answer.Grade),
-		// }
-
-		// fmt.Println("Res", result.CreatedAt)
-		fmt.Println("CAME TO RES")
 		md, _ := metadata.FromIncomingContext(ctx)
-		fmt.Println(md["authorization"])
-
-		fmt.Println("INFODEK", card.DeckID.String())
+		cm.log.Info("Authorization Metadata", "authorization", md["authorization"])
 
 		reviewId, err := cm.statClient.AddRecord(ctx, card.DeckID.String(), card.CardId.String(), answer.Grade)
 		if err != nil {
-			fmt.Println("SO HERE", reviewId)
+			cm.log.Error("Failed to add stat record", "error", err, "reviewId", reviewId)
 			return err
 		}
 	}
 	return nil
+}
+
+func (cm Card) SearchAllPublicCards() ([]model.Card, error) {
+	cards, err := cm.cardRepository.SearchAllPublicCards()
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
+func (cm Card) SearchUserPublicCards(userId string) ([]model.Card, error) {
+	userIdParsed, err := uuid.Parse(userId)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %v", err)
+	}
+
+	if userIdParsed == uuid.Nil {
+		return nil, fmt.Errorf("user ID cannot be empty")
+	}
+
+	cards, err := cm.cardRepository.SearchUserPublicCards(userIdParsed)
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
 }

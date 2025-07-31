@@ -21,4 +21,5 @@ type UpdateCardScheme struct {
 	ExpiresAt        time.Time      `json:"expires_at"`
 	RepetitionNumber int            `json:"repetition_number"`
 	Tags             pq.StringArray `json:"tags"`
+	IsPublic         bool           `json:"is_public"`
 }

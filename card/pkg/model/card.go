@@ -31,6 +31,7 @@ type Card struct {
 	RepetitionNumber int            `gorm:"type:smallint;default=0" json:"repetition_number"`
 	DeckID           uuid.UUID      `gorm:"type:uuid;index" json:"deck_id"`
 	Tags             pq.StringArray `gorm:"type:text[]" json:"tags"`
+	IsPublic         bool           `gorm:"default:false" json:"is_public"`
 }
 
 func (c *Card) BeforeCreate(tx *gorm.DB) error {
