@@ -16,9 +16,9 @@ type App struct {
 }
 
 func New(
-    log *slog.Logger,
-    grpcPort int,
-    storageAddress string,
+	log *slog.Logger,
+	grpcPort int,
+	storageAddress string,
 	statClient *statClient.Client,
 	security security.Security,
 ) *App {

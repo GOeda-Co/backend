@@ -29,7 +29,7 @@ type CardRepository interface {
 type Card struct {
 	log            *slog.Logger
 	cardRepository CardRepository
-	statClient *statClient.Client
+	statClient     *statClient.Client
 }
 
 func New(
@@ -40,7 +40,7 @@ func New(
 	return &Card{
 		log:            log,
 		cardRepository: cardRepo,
-		statClient: statClient,
+		statClient:     statClient,
 	}
 }
 

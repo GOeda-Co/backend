@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 type ReviewResult struct {
 	NextReviewTime time.Time
 	Interval       int // in minutes
