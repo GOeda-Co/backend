@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/GOeda-Co/proto-contract/convert"
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	deckv1 "github.com/GOeda-Co/proto-contract/gen/go/deck"
+	"github.com/GOeda-Co/proto-contract/model/deck"
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/deck/internal/controller"
-	"github.com/GOeda-Co/proto-contract/convert"
-	"github.com/GOeda-Co/proto-contract/model/deck"
 	"github.com/tomatoCoderq/deck/internal/lib/security"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -57,7 +57,6 @@ func (s *DeckServerAPI) AddDeck(ctx context.Context, in *deckv1.AddDeckRequest) 
 		Description: in.Description,
 		IsPublic:    in.IsPublic,
 	}
-	
 
 	// deck, _ := convert.FromProtoToModelDeck(in)
 	createdDeck, err := s.service.AddDeck(deck)

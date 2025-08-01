@@ -6,12 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/GOeda-Co/proto-contract/model/deck"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/tomatoCoderq/deck/internal/config"
 	"github.com/tomatoCoderq/deck/internal/repository/postgresql"
-	"github.com/GOeda-Co/proto-contract/model/deck"
-
 )
 
 var testRepo *postgresql.Repository

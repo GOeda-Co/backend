@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	services "github.com/tomatoCoderq/deck/internal/services/deck"
 	// schemes "github.com/GOeda-Co/proto-contract/scheme/deck"
-	"github.com/GOeda-Co/proto-contract/model/deck"
 	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	"github.com/GOeda-Co/proto-contract/model/deck"
 )
 
 type MockDeckRepository struct {

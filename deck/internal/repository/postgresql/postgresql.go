@@ -5,8 +5,8 @@ import (
 	"log/slog"
 
 	// model "github.com/tomatoCoderq/deck/pkg/model"
-	model "github.com/GOeda-Co/proto-contract/model/deck"
 	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	model "github.com/GOeda-Co/proto-contract/model/deck"
 
 	"github.com/google/uuid"
 
@@ -24,7 +24,9 @@ func New(connectionString string, log *slog.Logger) *Repository {
 		log.Error("Error during opening database")
 	}
 
-	db.AutoMigrate(&model.Deck{})
+	if err = db.AutoMigrate(&model.Deck{}); err != nil {
+		log.Error("Error during auto migration", "error", err)
+	}
 
 	return &Repository{db: db}
 }
@@ -45,13 +47,13 @@ func (r *Repository) ReadAllDecks() ([]model.Deck, error) {
 	return decks, err
 }
 
-func (r * Repository) SearchAllPublicDecks() ([]model.Deck, error) {
+func (r *Repository) SearchAllPublicDecks() ([]model.Deck, error) {
 	var decks []model.Deck
 	err := r.db.Where("is_public = ?", true).Preload("Cards").Find(&decks).Error
 	return decks, err
 }
 
-func (r * Repository) SearchUserPublicDecks(userId uuid.UUID) ([]model.Deck, error) {
+func (r *Repository) SearchUserPublicDecks(userId uuid.UUID) ([]model.Deck, error) {
 	var decks []model.Deck
 	err := r.db.Where("is_public = ? AND created_by = ?", true, userId).Preload("Cards").Find(&decks).Error
 	return decks, err

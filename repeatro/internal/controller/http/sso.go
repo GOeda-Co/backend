@@ -8,7 +8,6 @@ import (
 
 	_ "github.com/swaggo/swag/example/celler/httputil"
 
-	
 	_ "github.com/GOeda-Co/proto-contract/model/user"
 	// "github.com/tomatoCoderq/repeatro/pkg/schemes"
 	schemes "github.com/GOeda-Co/proto-contract/scheme/sso"

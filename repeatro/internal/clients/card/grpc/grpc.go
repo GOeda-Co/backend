@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/GOeda-Co/proto-contract/convert"
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	"github.com/google/uuid"
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	"github.com/GOeda-Co/proto-contract/convert"
 
 	// model "github.com/tomatoCoderq/repeatro/pkg/models"
 	modelCard "github.com/GOeda-Co/proto-contract/model/card"
@@ -177,8 +177,6 @@ func (c *Client) SearchUserPublicCards(ctx context.Context, uid uuid.UUID) ([]mo
 	return cards, nil
 	// return nil, nil
 }
-
-
 
 func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, card *schemes.UpdateCardScheme) (modelCard.Card, error) {
 	const op = "grpc.UpdateCard"

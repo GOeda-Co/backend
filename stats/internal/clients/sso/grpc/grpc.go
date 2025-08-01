@@ -54,9 +54,11 @@ func New(
 
 	// Создаём gRPC-клиент SSO/Auth
 	grpcClient := ssov1.NewAuthClient(cc)
+	log.Info("SSO gRPC client created", "address", addr)
 
 	return &Client{
 		api: grpcClient,
+		log: log,
 	}, nil
 }
 

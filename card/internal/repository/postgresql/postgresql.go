@@ -50,7 +50,10 @@ func New(connectionString string, log *slog.Logger) *Repository {
 		return nil
 	}
 
-	db.AutoMigrate(&model.Card{})
+	if err := db.AutoMigrate(&model.Card{}); err != nil {
+		log.Error("Error during auto migration", "error", err)
+		return nil
+	}
 
 	return &Repository{db: db}
 }

@@ -3,8 +3,8 @@ package controller
 import (
 	"github.com/google/uuid"
 	// models "github.com/tomatoCoderq/deck/pkg/model"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
 	"github.com/GOeda-Co/proto-contract/model/deck"
-	modelCard"github.com/GOeda-Co/proto-contract/model/card"
 )
 
 type Deck interface {

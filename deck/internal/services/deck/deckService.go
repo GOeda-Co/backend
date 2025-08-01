@@ -4,9 +4,8 @@ import (
 	"errors"
 	"log/slog"
 
-	
-	"github.com/GOeda-Co/proto-contract/model/deck"
 	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	"github.com/GOeda-Co/proto-contract/model/deck"
 
 	// "repeatro/src/deck/internal/repository/postgresql"
 

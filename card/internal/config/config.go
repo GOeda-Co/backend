@@ -9,7 +9,6 @@ import (
 	// "github.com/ilyakaznacheev/cleanenv"
 	// "github.com/tomatoCoderq/card/internal/config"
 	"gopkg.in/yaml.v3"
-	
 	// "github.com/joho/godotenv"
 )
 
@@ -91,8 +90,6 @@ func MustLoad() *Config {
 	// }
 
 	// var cfg Config
-
-
 
 	return &cfg
 }

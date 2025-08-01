@@ -14,9 +14,9 @@ import (
 
 	"log/slog"
 
-	services "github.com/tomatoCoderq/card/internal/services/card"
-	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 	"github.com/GOeda-Co/proto-contract/model/card"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
+	services "github.com/tomatoCoderq/card/internal/services/card"
 	// schemes "github.com/tomatoCoderq/card/pkg/scheme"
 )
 
@@ -190,7 +190,7 @@ func TestAddAnswers_ValidGradeAndOwner(t *testing.T) {
 		"authorization": mockJWT,
 		"user_id":       userId.String(),
 	}))
-	
+
 	err := service.AddAnswers(ctx, userId, answers)
 
 	assert.NoError(t, err)

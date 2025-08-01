@@ -12,19 +12,18 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tomatoCoderq/card/internal/config"
 
-	"github.com/tomatoCoderq/card/internal/repository/postgresql"
 	"github.com/GOeda-Co/proto-contract/model/card"
+	"github.com/tomatoCoderq/card/internal/repository/postgresql"
 )
 
 var repo *postgresql.Repository
 
 func TestMain(m *testing.M) {
-	// Try to load .env from multiple possible locations
 	_ = godotenv.Load("../../.env")
 	_ = godotenv.Load("../../../.env")
 	_ = godotenv.Load(".env")
 
-	// Set CONFIG_PATH for tests if not already set
+	log := slog.Default()
 
 	// Try test-specific config paths
 	testConfigPaths := []string{
@@ -35,13 +34,14 @@ func TestMain(m *testing.M) {
 
 	for _, path := range testConfigPaths {
 		if _, err := os.Stat(path); err == nil {
-			os.Setenv("CONFIG_PATH", path)
+			if err := os.Setenv("CONFIG_PATH", path); err != nil {
+				log.Error("Error setting CONFIG_PATH", "error", err)
+			}
 			break
 		}
 	}
 
 	cfg := config.MustLoad()
-	log := slog.Default()
 
 	dsn := cfg.ConnectionString
 

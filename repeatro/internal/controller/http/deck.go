@@ -106,14 +106,14 @@ func (cc *Controller) ReadDeck(ctx *gin.Context) {
 //	@Router			/decks/search [get]
 func (cc *Controller) SearchPublicDecks(ctx *gin.Context) {
 	userIdParam := ctx.Query("user_id")
-	
+
 	if userIdParam != "" {
 		_, err := uuid.Parse(userIdParam)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
 			return
 		}
-		
+
 		response, err := cc.deckClient.SearchUserPublicDecks(ctx, userIdParam)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search user public decks"})

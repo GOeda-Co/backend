@@ -22,7 +22,7 @@ import (
 	// "github.com/gin-gonic/gin"
 )
 
-const serviceName = "cards"
+// const serviceName = "cards"
 
 const (
 	envLocal = "local"
