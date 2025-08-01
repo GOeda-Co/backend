@@ -36,6 +36,14 @@ func (m *MockUserStorage) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, 
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockUserStorage) RegisterApp(ctx context.Context, name string, secret string) (int, error) {
+	args := m.Called(ctx, name, secret)
+	if args.Get(0) == nil {
+		return 0, args.Error(1)
+	}
+	return args.Int(0), args.Error(1)
+}
+
 type MockAppProvider struct {
 	mock.Mock
 }

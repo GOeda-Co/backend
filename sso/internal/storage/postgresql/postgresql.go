@@ -86,15 +86,19 @@ func (s *Storage) SaveUser(ctx context.Context, email string, hashPass []byte, n
 func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 	const op = "Storage.postgresql.User"
 	var user models.User
-	err := s.DB.Where("email = ?", email).Find(&user).Error
-	return user, fmt.Errorf("%s: %w", op, err)
+	if err := s.DB.Where("email = ?", email).Find(&user).Error; err != nil {
+		return models.User{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return user, nil
 }
 
 func (s *Storage) App(ctx context.Context, appID int) (modelsApp.App, error) {
 	const op = "Storage.postgresql.App"
 	var app modelsApp.App
-	err := s.DB.Where("ID = ?", appID).Find(&app).Error
-	return app, fmt.Errorf("%s: %w", op, err)
+	if err := s.DB.Where("ID = ?", appID).Find(&app).Error; err != nil {
+		return modelsApp.App{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return app, nil
 }
 
 func (s *Storage) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
@@ -108,4 +112,17 @@ func (s *Storage) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 		return false, fmt.Errorf("%s: %v", op, err)
 	}
 	return user.IsAdmin, nil
+}
+
+func (s *Storage) RegisterApp(ctx context.Context, name string, secret string) (appID int, err error) {
+	const op = "Storage.postgresql.RegisterApp"
+	app := modelsApp.App{
+		Name:   name,
+		Secret: secret,
+	}
+	err = s.DB.Create(&app).Error
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return app.ID, nil
 }

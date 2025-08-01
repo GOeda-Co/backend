@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
 
 	ssov1 "github.com/GOeda-Co/proto-contract/gen/go/sso"
@@ -109,4 +110,25 @@ func (c *Client) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 	}
 
 	return resp.IsAdmin, nil
+}
+
+func (c *Client) RegisterApp(ctx context.Context, name string, secret string) (int, error) {
+	const op = "grpc.RegisterApp"
+
+	resp, err := c.api.RegisterApp(ctx, &ssov1.RegisterAppRequest{
+		Name:   name,
+		Secret: secret,
+	})
+	if err != nil {
+		c.log.Debug("Failed to register app", "error", err)
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	c.log.Debug("App registered", "app_id", resp.AppId)
+	appIdInt, err := strconv.Atoi(resp.AppId)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return appIdInt, nil
 }

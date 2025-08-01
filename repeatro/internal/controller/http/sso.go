@@ -112,3 +112,28 @@ func (c *Controller) IsAdmin(ctx *gin.Context) {
 		"is_admin": isAdmin,
 	})
 }
+
+func (c *Controller) RegisterApp(ctx *gin.Context) {
+	//TODO: Temporary solution, move to proto-contract
+	type AppScheme struct {
+		Name   string `json:"name" binding:"required"`
+		Secret string `json:"secret" binding:"required"`
+	}
+
+	appScheme := AppScheme{}
+	if err := ctx.ShouldBindBodyWithJSON(&appScheme); err != nil {
+		ctx.JSON(400, gin.H{"error": fmt.Sprintf("Invalid request body: %v", err)})
+		return
+	}
+
+	appID, err := c.ssoClient.RegisterApp(ctx.Request.Context(), appScheme.Name, appScheme.Secret)
+	if err != nil {
+		c.log.Debug("Failed to register app", "error", err)
+		ctx.JSON(500, gin.H{"error": fmt.Sprintf("Failed to register app: %v", err)})
+		return
+	}
+	ctx.JSON(200, gin.H{
+		"app_id":  appID,
+		"message": "App registered successfully",
+	})
+}

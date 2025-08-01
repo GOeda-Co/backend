@@ -62,7 +62,7 @@ func (cr Repository) AddCard(card *model.Card) error {
 	return cr.db.Create(card).Error
 }
 
-func (cr Repository) ReadAllCards(userId uuid.UUID) ([]model.Card, error) {
+func (cr Repository) ReadAllOwnCardsToLearn(userId uuid.UUID) ([]model.Card, error) {
 	var cards []model.Card
 	err := cr.db.
 		Where("expires_at < ?", time.Now()).
@@ -74,7 +74,7 @@ func (cr Repository) ReadAllCards(userId uuid.UUID) ([]model.Card, error) {
 	return cards, err
 }
 
-func (cr Repository) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) {
+func (cr Repository) ReadAllOwnCards(userId uuid.UUID) ([]model.Card, error) {
 	var cards []model.Card
 	err := cr.db.
 		Where("created_by = ?", userId).

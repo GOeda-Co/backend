@@ -102,7 +102,7 @@ func (c *Client) ReadAllCardsToLearn(ctx context.Context, uid uuid.UUID) ([]mode
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
 
-	resp, err := c.api.ReadAllCards(ctx, &cardv1.ReadAllCardsRequest{UserId: uid.String()})
+	resp, err := c.api.ReadAllOwnCardsToLearn(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -122,7 +122,7 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]modelCard.C
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
 
-	resp, err := c.api.ReadAllCardsByUser(ctx, &cardv1.ReadAllCardsByUserRequest{UserId: uid.String()})
+	resp, err := c.api.ReadAllOwnCards(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -212,7 +212,6 @@ func (c *Client) DeleteCard(ctx context.Context, cid uuid.UUID, uid uuid.UUID) (
 
 	resp, err := c.api.DeleteCard(ctx, &cardv1.DeleteCardRequest{
 		CardId: cid.String(),
-		UserId: uid.String(),
 	})
 	if err != nil {
 		return false, fmt.Errorf("%s: %w", op, err)
