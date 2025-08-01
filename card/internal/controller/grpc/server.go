@@ -68,14 +68,13 @@ func (s *ServerAPI) AddCard(ctx context.Context, in *cardv1.AddCardRequest) (*ca
 	return &cardv1.AddCardResponse{Card: convert.FromModelToProtoCard(fullCard)}, nil
 }
 
-func (s *ServerAPI) ReadAllCards(ctx context.Context, in *cardv1.ReadAllCardsRequest) (*cardv1.ReadAllCardsResponse, error) {
-
+func (s *ServerAPI) ReadAllOwnCardsToLearn(ctx context.Context, in *emptypb.Empty) (*cardv1.ReadAllCardsToLearnResponse, error) {
 	authUser, err := GetAuthUser(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))
 	}
 
-	cards, err := s.service.ReadAllCards(authUser.ID)
+	cards, err := s.service.ReadAllOwnCardsToLearn(authUser.ID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to read cards")
 	}
@@ -85,16 +84,16 @@ func (s *ServerAPI) ReadAllCards(ctx context.Context, in *cardv1.ReadAllCardsReq
 		protoCards = append(protoCards, convert.FromModelToProtoCard(&card))
 	}
 
-	return &cardv1.ReadAllCardsResponse{Cards: protoCards}, nil
+	return &cardv1.ReadAllCardsToLearnResponse{Cards: protoCards}, nil
 }
 
-func (s *ServerAPI) ReadAllCardsByUser(ctx context.Context, in *cardv1.ReadAllCardsByUserRequest) (*cardv1.ReadAllCardsByUserResponse, error) {
-	userId, err := uuid.Parse(in.UserId)
+func (s *ServerAPI) ReadAllOwnCards(ctx context.Context, in *emptypb.Empty) (*cardv1.ReadAllOwnCardsResponse, error) {
+	authUser, err := GetAuthUser(ctx)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "Invalid user ID")
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))
 	}
 
-	cards, err := s.service.ReadAllCardsByUser(userId)
+	cards, err := s.service.ReadAllOwnCards(authUser.ID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to read cards")
 	}
@@ -104,7 +103,7 @@ func (s *ServerAPI) ReadAllCardsByUser(ctx context.Context, in *cardv1.ReadAllCa
 		protoCards = append(protoCards, convert.FromModelToProtoCard(&card))
 	}
 
-	return &cardv1.ReadAllCardsByUserResponse{Cards: protoCards}, nil
+	return &cardv1.ReadAllOwnCardsResponse{Cards: protoCards}, nil
 }
 
 func (s *ServerAPI) SearchAllPublicCards(ctx context.Context, in *emptypb.Empty) (*cardv1.SearchAllPublicCardsResponse, error) {
@@ -140,9 +139,9 @@ func (s *ServerAPI) UpdateCard(ctx context.Context, in *cardv1.UpdateCardRequest
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Invalid card ID")
 	}
-	userId, err := uuid.Parse(in.UserId)
+	authUser, err := GetAuthUser(ctx)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "Invalid user ID")
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))
 	}
 
 	cardUpdate := convert.FromProtoToUpdateSchemeCard(in)
@@ -150,7 +149,7 @@ func (s *ServerAPI) UpdateCard(ctx context.Context, in *cardv1.UpdateCardRequest
 		return nil, status.Error(codes.InvalidArgument, "Invalid update payload")
 	}
 
-	updatedCard, err := s.service.UpdateCard(cardId, cardUpdate, userId)
+	updatedCard, err := s.service.UpdateCard(cardId, cardUpdate, authUser.ID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to update card")
 	}
@@ -163,12 +162,12 @@ func (s *ServerAPI) DeleteCard(ctx context.Context, in *cardv1.DeleteCardRequest
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Invalid card ID")
 	}
-	userId, err := uuid.Parse(in.UserId)
+	authUser, err := GetAuthUser(ctx)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "Invalid user ID")
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to auth user: %v", err))
 	}
 
-	err = s.service.DeleteCard(cardId, userId)
+	err = s.service.DeleteCard(cardId, authUser.ID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to delete card: %v", err))
 	}
@@ -195,11 +194,8 @@ func (s *ServerAPI) AddAnswers(ctx context.Context, in *cardv1.AddAnswersRequest
 		if err != nil {
 			return nil, status.Error(codes.Internal, "Failed during converting answer")
 		}
-		fmt.Printf("CONVER: %v", answerConverted)
 		answers = append(answers, *answerConverted)
 	}
-
-	fmt.Println("ANS", answers)
 
 	err = s.service.AddAnswers(ctx, authUser.ID, answers)
 	if err != nil {

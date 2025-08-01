@@ -11,8 +11,8 @@ import (
 
 type Card interface {
 	AddCard(card *model.Card) (*model.Card, error)
-	ReadAllCards(userId uuid.UUID) ([]model.Card, error)
-	ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error)
+	ReadAllOwnCardsToLearn(userId uuid.UUID) ([]model.Card, error)
+	ReadAllOwnCards(userId uuid.UUID) ([]model.Card, error)
 	SearchAllPublicCards() ([]model.Card, error)
 	SearchUserPublicCards(useId string) ([]model.Card, error)
 	UpdateCard(id uuid.UUID, card *schemes.UpdateCardScheme, userId uuid.UUID) (*model.Card, error)

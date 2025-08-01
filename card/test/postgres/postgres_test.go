@@ -76,7 +76,7 @@ func TestCardRepo_CRUD(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Front side", readCard.Word)
 
-	cards, err := repo.ReadAllCards(userId)
+	cards, err := repo.ReadAllOwnCardsToLearn(userId)
 	assert.NoError(t, err)
 	fmt.Println(len(cards) >= 1)
 	assert.True(t, len(cards) >= 1)

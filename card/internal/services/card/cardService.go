@@ -18,8 +18,8 @@ import (
 
 type CardRepository interface {
 	AddCard(card *model.Card) error
-	ReadAllCards(userId uuid.UUID) ([]model.Card, error)
-	ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error)
+	ReadAllOwnCardsToLearn(userId uuid.UUID) ([]model.Card, error)
+	ReadAllOwnCards(userId uuid.UUID) ([]model.Card, error)
 	SearchAllPublicCards() ([]model.Card, error)
 	SearchUserPublicCards(userId uuid.UUID) ([]model.Card, error)
 	ReadCard(cardId uuid.UUID) (*model.Card, error)
@@ -58,16 +58,16 @@ func (cs Card) AddCard(card *model.Card) (*model.Card, error) {
 	return card, nil
 }
 
-func (cm Card) ReadAllCards(userId uuid.UUID) ([]model.Card, error) {
-	cards, err := cm.cardRepository.ReadAllCards(userId)
+func (cm Card) ReadAllOwnCardsToLearn(userId uuid.UUID) ([]model.Card, error) {
+	cards, err := cm.cardRepository.ReadAllOwnCardsToLearn(userId)
 	if err != nil {
 		return nil, err
 	}
 	return cards, nil
 }
 
-func (cm Card) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) {
-	cards, err := cm.cardRepository.ReadAllCardsByUser(userId)
+func (cm Card) ReadAllOwnCards(userId uuid.UUID) ([]model.Card, error) {
+	cards, err := cm.cardRepository.ReadAllOwnCards(userId)
 	if err != nil {
 		return nil, err
 	}

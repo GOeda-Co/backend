@@ -35,7 +35,7 @@ func (m *MockStatsClient) AddRecord(ctx context.Context, deckId, cardId string, 
 }
 
 // ReadAllCardsByUser implements services.CardRepository.
-func (m *MockCardRepo) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) {
+func (m *MockCardRepo) ReadAllOwnCards(userId uuid.UUID) ([]model.Card, error) {
 	panic("unimplemented")
 }
 
@@ -44,7 +44,7 @@ func (m *MockCardRepo) AddCard(card *model.Card) error {
 	return args.Error(0)
 }
 
-func (m *MockCardRepo) ReadAllCards(userId uuid.UUID) ([]model.Card, error) {
+func (m *MockCardRepo) ReadAllOwnCardsToLearn(userId uuid.UUID) ([]model.Card, error) {
 	args := m.Called(userId)
 	return args.Get(0).([]model.Card), args.Error(1)
 }
@@ -107,9 +107,9 @@ func TestReadAllCards(t *testing.T) {
 
 	userId := uuid.New()
 	expectedCards := []model.Card{{Word: "A"}, {Translation: "B"}}
-	mockRepo.On("ReadAllCards", userId).Return(expectedCards, nil)
+	mockRepo.On("ReadAllOwnCardsToLearn", userId).Return(expectedCards, nil)
 
-	cards, err := service.ReadAllCards(userId)
+	cards, err := service.ReadAllOwnCardsToLearn(userId)
 
 	assert.NoError(t, err)
 	assert.Len(t, cards, 2)

@@ -163,11 +163,6 @@ func (s *Security) AuthUnaryInterceptor() grpc.UnaryServerInterceptor {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid email in token")
 		}
 
-		// isAdmin, ok := jwtClaimsMap["is_admin"].(bool)
-		// if !ok {
-		// 	return nil, status.Errorf(codes.Unauthenticated, "invalid user ID in token")
-		// }
-
 		authUser := AuthUser{
 			uidUUID,
 			email,
@@ -181,45 +176,3 @@ func (s *Security) AuthUnaryInterceptor() grpc.UnaryServerInterceptor {
 		return handler(ctx, req)
 	}
 }
-
-// func New(
-//     log *slog.Logger,
-//     appSecret string,
-//     permProvider PermissionProvider,
-// ) func(next http.Handler) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		authHeader := c.GetHeader("Authorization")
-// 		if authHeader == "" {
-// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-// 			return
-// 		}
-
-// 		parts := strings.Split(authHeader, " ")
-// 		fmt.Println("HERE1")
-// 		if len(parts) != 2 || parts[0] != "Bearer" {
-// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
-// 			return
-// 		}
-
-// 		tokenString := parts[1]
-// 		claims, err := s.validateToken(tokenString, c)
-// 		fmt.Println("HERE2")
-// 		if err != nil {
-// 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		isAdmin, err := permProvider.IsAdmin(r.Context(), claims.UID)
-//             if err != nil {
-//                 log.Error("failed to check if user is admin", sl.Err(err))
-
-//                 ctx := context.WithValue(r.Context(), errorKey, ErrFailedIsAdminCheck)
-//                 next.ServeHTTP(w, r.WithContext(ctx))
-
-//                 return
-//             }
-
-// 		c.Set("userClaims", claims)
-// 		c.Next()
-// 	}
-// }
