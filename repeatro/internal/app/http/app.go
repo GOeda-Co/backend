@@ -32,7 +32,6 @@ import (
 	statClient "github.com/tomatoCoderq/repeatro/internal/clients/stats/grpc"
 	httpRepeatro "github.com/tomatoCoderq/repeatro/internal/controller/http"
 	"github.com/tomatoCoderq/repeatro/internal/lib/security"
-	_ "github.com/tomatoCoderq/repeatro/pkg/models"
 )
 
 type App struct {
@@ -76,6 +75,7 @@ func New(
 	cards.Handle(http.MethodPost, "", ctrl.AddCard)
 	cards.Handle(http.MethodGet, "/learn", ctrl.ReadAllCardsToLearn)
 	cards.Handle(http.MethodGet, "", ctrl.ReadAllCards)
+	cards.Handle(http.MethodGet, "/search", ctrl.SearchPublicCards)
 	cards.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)
 	cards.Handle(http.MethodDelete, "/:id", ctrl.DeleteCard)
 	cards.Handle(http.MethodPost, "/answers", ctrl.AddAnswers)
@@ -85,6 +85,7 @@ func New(
 
 	decks.Handle(http.MethodPost, "", ctrl.AddDeck)
 	decks.Handle(http.MethodGet, "", ctrl.ReadAllDecks)
+	decks.Handle(http.MethodGet, "/search", ctrl.SearchPublicDecks)
 	decks.Handle(http.MethodGet, "/:id", ctrl.ReadDeck)
 	decks.Handle(http.MethodDelete, "/:id", ctrl.DeleteDeck)
 	// decks.Handle(http.MethodPut, "/:id", ctrl.UpdateCard)

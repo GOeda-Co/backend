@@ -7,7 +7,9 @@ import (
 	"log/slog"
 	"time"
 
-	"sso/internal/models"
+	// "sso/internal/models"
+	modelsApp "github.com/GOeda-Co/proto-contract/model/app"
+	models "github.com/GOeda-Co/proto-contract/model/user"
 	"sso/internal/storage"
 
 	"github.com/google/uuid"
@@ -16,7 +18,8 @@ import (
 )
 
 type Storage struct {
-	DB *gorm.DB
+	DB  *gorm.DB
+	log *slog.Logger
 }
 
 func New(connString string, log *slog.Logger) (*Storage, error) {
@@ -38,8 +41,9 @@ func New(connString string, log *slog.Logger) (*Storage, error) {
 				break // success
 			}
 		}
-
-		log.Info("[%s] waiting for database... (%d/%d)", op, i+1, maxRetries)
+		log.Info("waiting for database...",
+			"operation", op,
+			"attempt", fmt.Sprintf("%d/%d", i+1, maxRetries))
 		time.Sleep(retryDelay)
 	}
 
@@ -48,11 +52,11 @@ func New(connString string, log *slog.Logger) (*Storage, error) {
 	}
 
 	// AutoMigrate your models
-	if err := DB.AutoMigrate(&models.User{}, &models.App{}); err != nil {
+	if err := DB.AutoMigrate(&models.User{}, &modelsApp.App{}); err != nil {
 		return nil, fmt.Errorf("%s: migration error: %w", op, err)
 	}
 
-	return &Storage{DB: DB}, nil
+	return &Storage{DB: DB, log: log}, nil
 }
 
 /*
@@ -76,21 +80,21 @@ func (s *Storage) SaveUser(ctx context.Context, email string, hashPass []byte, n
 		Name:     name,
 	}
 	err = s.DB.Create(&user).Error
-	return user.ID, err
+	return user.ID, fmt.Errorf("%s: %w", op, err)
 }
 
 func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 	const op = "Storage.postgresql.User"
 	var user models.User
 	err := s.DB.Where("email = ?", email).Find(&user).Error
-	return user, err
+	return user, fmt.Errorf("%s: %w", op, err)
 }
 
-func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
+func (s *Storage) App(ctx context.Context, appID int) (modelsApp.App, error) {
 	const op = "Storage.postgresql.App"
-	var app models.App
+	var app modelsApp.App
 	err := s.DB.Where("ID = ?", appID).Find(&app).Error
-	return app, err
+	return app, fmt.Errorf("%s: %w", op, err)
 }
 
 func (s *Storage) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {

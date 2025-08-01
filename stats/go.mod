@@ -3,7 +3,7 @@ module github.com/tomatoCoderq/stats
 go 1.24.0
 
 require (
-	github.com/GOeda-Co/proto-contract v0.4.0
+	github.com/GOeda-Co/proto-contract v0.4.4
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.30.1

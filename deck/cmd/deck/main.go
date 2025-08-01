@@ -29,7 +29,7 @@ import (
 	// "github.com/gin-gonic/gin"
 )
 
-const serviceName = "cards"
+// const serviceName = "decks"
 
 const (
 	envLocal = "local"
@@ -38,7 +38,6 @@ const (
 )
 
 func main() {
-	// Load .env variables from multiple possible locations
 	_ = godotenv.Load("/app/.env")
 	_ = godotenv.Load(".env")
 	_ = godotenv.Load("../../.env")

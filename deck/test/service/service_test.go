@@ -8,7 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	services "github.com/tomatoCoderq/deck/internal/services/deck"
-	"github.com/tomatoCoderq/deck/pkg/model"
+	// schemes "github.com/GOeda-Co/proto-contract/scheme/deck"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	"github.com/GOeda-Co/proto-contract/model/deck"
 )
 
 type MockDeckRepository struct {
@@ -40,14 +42,23 @@ func (m *MockDeckRepository) DeleteDeck(deckId uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *MockDeckRepository) SearchAllPublicDecks() ([]model.Deck, error) {
+	args := m.Called()
+	return args.Get(0).([]model.Deck), args.Error(1)
+}
+func (m *MockDeckRepository) SearchUserPublicDecks(userId uuid.UUID) ([]model.Deck, error) {
+	args := m.Called(userId)
+	return args.Get(0).([]model.Deck), args.Error(1)
+}
+
 func (m *MockDeckRepository) AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error {
 	args := m.Called(cardId, deckId)
 	return args.Error(0)
 }
 
-func (m *MockDeckRepository) FindAllCardsInDeck(deckId uuid.UUID) ([]model.Card, error) {
+func (m *MockDeckRepository) FindAllCardsInDeck(deckId uuid.UUID) ([]modelCard.Card, error) {
 	args := m.Called(deckId)
-	return args.Get(0).([]model.Card), args.Error(1)
+	return args.Get(0).([]modelCard.Card), args.Error(1)
 }
 
 func TestAddDeck(t *testing.T) {

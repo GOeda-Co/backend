@@ -6,7 +6,6 @@ import (
 
 	statsv1 "github.com/GOeda-Co/proto-contract/gen/go/stats"
 	"github.com/gin-gonic/gin"
-	_ "github.com/tomatoCoderq/repeatro/pkg/models"
 )
 
 // GetCardsReviewedCount godoc

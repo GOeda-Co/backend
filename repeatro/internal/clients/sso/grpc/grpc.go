@@ -52,11 +52,12 @@ func New(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	// Создаём gRPC-клиент SSO/Auth
 	grpcClient := ssov1.NewAuthClient(cc)
+	log.Info("gRPC client created", "service", "sso")
 
 	return &Client{
 		api: grpcClient,
+		log: log,
 	}, nil
 }
 

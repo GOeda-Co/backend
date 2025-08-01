@@ -41,7 +41,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.AnswerScheme"
+                                "$ref": "#/definitions/scheme.AnswerScheme"
                             }
                         }
                     }
@@ -104,7 +104,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.UpdateCardScheme"
+                            "$ref": "#/definitions/scheme.UpdateCardScheme"
                         }
                     }
                 ],
@@ -112,7 +112,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card"
+                            "$ref": "#/definitions/model.Card"
                         }
                     },
                     "400": {
@@ -181,26 +181,26 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card"
+                                "$ref": "#/definitions/model.Card"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request - Invalid user_id format",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden - User without admin rights cannot access other users' cards",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to get user ID or retrieve cards",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -224,7 +224,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card"
+                            "$ref": "#/definitions/model.Card"
                         }
                     }
                 ],
@@ -232,13 +232,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card"
+                            "$ref": "#/definitions/model.Card"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to read request body, get user ID, or add card",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -260,14 +260,87 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card"
+                                "$ref": "#/definitions/model.Card"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to get user ID or retrieve cards",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/cards/public": {
+            "get": {
+                "description": "Retrieves all public cards available in the system",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cards"
+                ],
+                "summary": "Search all public cards",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Card"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Failed to search public cards",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/cards/public/user/{user_id}": {
+            "get": {
+                "description": "Retrieves all public cards created by a specific user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cards"
+                ],
+                "summary": "Search user's public cards",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Card"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid user ID format",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Failed to search user's public cards",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -293,7 +366,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck"
+                            "$ref": "#/definitions/model.Deck"
                         }
                     }
                 ],
@@ -301,19 +374,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck"
+                            "$ref": "#/definitions/model.Deck"
                         }
                     },
                     "400": {
                         "description": "Bad Request - Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to get user ID or add deck",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -349,13 +422,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request - Invalid card ID or deck ID format",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to add card to deck",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -381,19 +454,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck"
+                            "$ref": "#/definitions/model.Deck"
                         }
                     },
                     "400": {
                         "description": "Bad Request - Invalid deck ID format",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to read deck",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -420,13 +493,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request - Invalid deck ID format",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to delete deck",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -454,20 +527,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card"
+                                "$ref": "#/definitions/model.Card"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request - Invalid deck ID format",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to get cards from deck",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -489,14 +562,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Deck"
+                                "$ref": "#/definitions/model.Deck"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to retrieve decks",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -528,19 +601,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Admin status check result",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.AdminCheckResponse"
+                            "$ref": "#/definitions/model.AdminCheckResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request - user_id is required or invalid format",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to check admin status",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -566,7 +639,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.LoginScheme"
+                            "$ref": "#/definitions/scheme.LoginScheme"
                         }
                     }
                 ],
@@ -574,19 +647,19 @@ const docTemplate = `{
                     "200": {
                         "description": "User logged in successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.LoginResponse"
+                            "$ref": "#/definitions/model.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request - Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to login user",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -612,7 +685,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_schemes.RegisterScheme"
+                            "$ref": "#/definitions/scheme.RegisterScheme"
                         }
                     }
                 ],
@@ -620,19 +693,19 @@ const docTemplate = `{
                     "200": {
                         "description": "User registered successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.RegisterResponse"
+                            "$ref": "#/definitions/model.RegisterResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request - Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to register user",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -658,13 +731,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request - Failed to get user ID from context",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to get average grade",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -690,13 +763,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request - Failed to get user ID from context",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error - Failed to get reviewed cards",
                         "schema": {
-                            "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse"
+                            "$ref": "#/definitions/model.ErrorResponse"
                         }
                     }
                 }
@@ -704,7 +777,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_tomatoCoderq_repeatro_pkg_models.AdminCheckResponse": {
+        "model.AdminCheckResponse": {
             "type": "object",
             "properties": {
                 "is_admin": {
@@ -712,7 +785,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_models.Card": {
+        "model.Card": {
             "type": "object",
             "properties": {
                 "card_id": {
@@ -736,6 +809,9 @@ const docTemplate = `{
                 "interval": {
                     "type": "integer"
                 },
+                "is_public": {
+                    "type": "boolean"
+                },
                 "repetition_number": {
                     "type": "integer"
                 },
@@ -756,13 +832,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_models.Deck": {
+        "model.Deck": {
             "type": "object",
             "properties": {
                 "cards": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_tomatoCoderq_repeatro_pkg_models.Card"
+                        "$ref": "#/definitions/model.Card"
                     }
                 },
                 "cards_quantity": {
@@ -785,7 +861,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_models.ErrorResponse": {
+        "model.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -793,7 +869,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_models.LoginResponse": {
+        "model.LoginResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -804,7 +880,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_models.RegisterResponse": {
+        "model.RegisterResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -815,7 +891,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_schemes.AnswerScheme": {
+        "scheme.AnswerScheme": {
             "type": "object",
             "properties": {
                 "card_id": {
@@ -826,7 +902,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_schemes.LoginScheme": {
+        "scheme.LoginScheme": {
             "type": "object",
             "required": [
                 "app_id",
@@ -847,7 +923,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_schemes.RegisterScheme": {
+        "scheme.RegisterScheme": {
             "type": "object",
             "required": [
                 "email",
@@ -869,7 +945,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_tomatoCoderq_repeatro_pkg_schemes.UpdateCardScheme": {
+        "scheme.UpdateCardScheme": {
             "type": "object",
             "properties": {
                 "easiness": {
@@ -880,6 +956,9 @@ const docTemplate = `{
                 },
                 "interval": {
                     "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
                 },
                 "repetition_number": {
                     "type": "integer"

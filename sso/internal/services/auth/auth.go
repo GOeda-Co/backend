@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"sso/internal/models"
+	// "sso/internal/models"
+	models "github.com/GOeda-Co/proto-contract/model/user"
+	modelsApp "github.com/GOeda-Co/proto-contract/model/app"
 	"sso/internal/storage"
 	"time"
 
@@ -26,7 +28,7 @@ type UserStorage interface {
 
 // interface to get app from the storage
 type AppProvider interface {
-	App(ctx context.Context, appID int) (models.App, error)
+	App(ctx context.Context, appID int) (modelsApp.App, error)
 }
 
 type Auth struct {

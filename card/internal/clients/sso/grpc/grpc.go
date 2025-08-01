@@ -54,6 +54,7 @@ func New(
 
 	// Создаём gRPC-клиент SSO/Auth
 	grpcClient := ssov1.NewAuthClient(cc)
+	log.Info("SSO gRPC client created", "address", addr)
 
 	return &Client{
 		api: grpcClient,
@@ -75,7 +76,6 @@ func (c *Client) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 		UserId: userID.String(),
 	})
 	if err != nil {
-		fmt.Println("errro?")
 		return false, fmt.Errorf("%s: %w", op, err)
 	}
 

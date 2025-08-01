@@ -30,7 +30,7 @@ import (
 	// "github.com/gin-gonic/gin"
 )
 
-const serviceName = "stats"
+// const serviceName = "stats"
 
 const (
 	envLocal = "local"

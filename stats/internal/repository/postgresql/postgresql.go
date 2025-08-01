@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/tomatoCoderq/stats/pkg/model/review"
+	// "github.com/tomatoCoderq/stats/pkg/model/review"
+	model "github.com/GOeda-Co/proto-contract/model/review"
 
 	// "github.com/tomatoCoderq/card/pkg/scheme"
 
@@ -50,7 +51,10 @@ func New(connectionString string, log *slog.Logger) *Repository {
 		return nil
 	}
 
-	db.AutoMigrate(&model.Review{})
+	if err = db.AutoMigrate(&model.Review{}); err != nil {
+		log.Error("Error during AutoMigrate", "error", err)
+		return nil
+	}
 
 	return &Repository{db: db}
 }

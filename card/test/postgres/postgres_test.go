@@ -8,22 +8,40 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/tomatoCoderq/card/internal/config"
 
-	// "gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
+	"github.com/GOeda-Co/proto-contract/model/card"
 	"github.com/tomatoCoderq/card/internal/repository/postgresql"
-	"github.com/tomatoCoderq/card/pkg/model"
 )
 
 var repo *postgresql.Repository
-var db *gorm.DB
 
 func TestMain(m *testing.M) {
-	cfg := config.MustLoad()
+	_ = godotenv.Load("../../.env")
+	_ = godotenv.Load("../../../.env")
+	_ = godotenv.Load(".env")
+
 	log := slog.Default()
+
+	// Try test-specific config paths
+	testConfigPaths := []string{
+		"../../config/local.yaml",
+		"../../config/config.yaml",
+		"../../../config/local.yaml",
+	}
+
+	for _, path := range testConfigPaths {
+		if _, err := os.Stat(path); err == nil {
+			if err := os.Setenv("CONFIG_PATH", path); err != nil {
+				log.Error("Error setting CONFIG_PATH", "error", err)
+			}
+			break
+		}
+	}
+
+	cfg := config.MustLoad()
 
 	dsn := cfg.ConnectionString
 
@@ -36,7 +54,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCardRepo_CRUD(t *testing.T) {
-	userId, _ := uuid.Parse("e1d3ce6e-1e99-4724-b57a-45e0c5d9dd08")
+	userId, _ := uuid.Parse("d9f5e420-9303-45b8-90ba-f036ef0aea44")
 	cardId := uuid.New()
 
 	card := &model.Card{
@@ -75,4 +93,27 @@ func TestCardRepo_CRUD(t *testing.T) {
 
 	deleted, _ := repo.ReadCard(cardId)
 	assert.Equal(t, &model.Card{}, deleted)
+}
+
+func TestSearchAllPublicCards(t *testing.T) {
+	/*
+		Search all public cards available in the repository
+		Here I assume that there at least one public card exists
+		so the result should not be empty
+	*/
+	results, err := repo.SearchAllPublicCards() // Search all cards that are public
+	assert.NoError(t, err)
+	assert.NotEmpty(t, results)
+}
+
+func TestSearchUserPublicCards(t *testing.T) {
+	userId, _ := uuid.Parse("e1d3ce6e-1e99-4724-b57a-45e0c5d9dd08")
+	/*
+		Search all public cards for a specific user
+		Here I use a user ID that is expected to not have any public cards
+		so the result should be empty
+	*/
+	results, err := repo.SearchUserPublicCards(userId)
+	assert.NoError(t, err)
+	assert.Empty(t, results)
 }

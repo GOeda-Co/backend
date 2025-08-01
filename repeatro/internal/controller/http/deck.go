@@ -8,7 +8,8 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/swaggo/swag/example/celler/httputil"
 
-	model "github.com/tomatoCoderq/repeatro/pkg/models"
+	// model "github.com/tomatoCoderq/repeatro/pkg/models"
+	model "github.com/GOeda-Co/proto-contract/model/deck"
 )
 
 // AddDeck godoc
@@ -92,6 +93,44 @@ func (cc *Controller) ReadDeck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// SearchPublicDecks godoc
+//
+//	@Summary		Search public decks
+//	@Description	Retrieves public decks. If user_id query parameter is provided, returns that user's public decks. Otherwise returns all public decks in the system.
+//	@Tags			decks
+//	@Produce		json
+//	@Param			user_id	query		string	false	"User ID to filter by specific user's public decks"
+//	@Success		200		{array}		model.Deck
+//	@Failure		400		{object}	model.ErrorResponse	"Bad Request - Invalid user ID format"
+//	@Failure		500		{object}	model.ErrorResponse	"Internal Server Error - Failed to get user ID or search public decks"
+//	@Router			/decks/search [get]
+func (cc *Controller) SearchPublicDecks(ctx *gin.Context) {
+	userIdParam := ctx.Query("user_id")
+
+	if userIdParam != "" {
+		_, err := uuid.Parse(userIdParam)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
+			return
+		}
+
+		response, err := cc.deckClient.SearchUserPublicDecks(ctx, userIdParam)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search user public decks"})
+			return
+		}
+		ctx.JSON(http.StatusOK, response)
+	} else {
+		// Search all public decks
+		response, err := cc.deckClient.SearchAllPublicDecks(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search public decks"})
+			return
+		}
+		ctx.JSON(http.StatusOK, response)
+	}
+}
+
 // DeleteDeck godoc
 //
 //	@Summary		Delete a deck
@@ -122,7 +161,7 @@ func (cc *Controller) DeleteDeck(ctx *gin.Context) {
 // AddCardToDeck godoc
 //
 //	@Summary		Add card to deck
-//	@Description	Add a card to a specific deck
+//	@Description	Add a card to a specific deck. Is_public will be updated to deck's is_public
 //	@Tags			decks
 //	@Param			card_id	path	string	true	"Card ID"
 //	@Param			deck_id	path	string	true	"Deck ID"
@@ -142,12 +181,6 @@ func (cc *Controller) AddCardToDeck(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid deck ID"})
 		return
 	}
-
-	// uid, err := GetUserIdFromContext(ctx)
-	// if err != nil {
-	// 	ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
 
 	err = cc.deckClient.AddCardToDeck(ctx, did, cid)
 	if err != nil {

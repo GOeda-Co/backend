@@ -1,9 +1,7 @@
 package http
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,8 +9,10 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/swaggo/swag/example/celler/httputil"
 
-	model "github.com/tomatoCoderq/repeatro/pkg/models"
-	"github.com/tomatoCoderq/repeatro/pkg/schemes"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	_ "github.com/GOeda-Co/proto-contract/model/response"
+
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 )
 
 // AddCard godoc
@@ -27,21 +27,16 @@ import (
 //	@Failure		500		{object}	model.ErrorResponse	"Internal Server Error - Failed to read request body, get user ID, or add card"
 //	@Router			/cards [post]
 func (cc *Controller) AddCard(ctx *gin.Context) {
-	body, err := io.ReadAll(ctx.Request.Body)
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
 	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get user ID from context: %v", err)})
 		return
 	}
 
-	var card model.Card
-	if err = json.Unmarshal(body, &card); err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+	var card modelCard.Card
+
+	if err := ctx.ShouldBindJSON(&card); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Failed to bind JSON: %v", err)})
 		return
 	}
 
@@ -49,7 +44,7 @@ func (cc *Controller) AddCard(ctx *gin.Context) {
 
 	response, err := cc.cardClient.AddCard(ctx, &card)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to add card: %v", err)})
 		return
 	}
 
@@ -68,12 +63,12 @@ func (cc *Controller) AddCard(ctx *gin.Context) {
 func (cc *Controller) ReadAllCardsToLearn(ctx *gin.Context) {
 	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get user ID from context: %v", err)})
 		return
 	}
 	response, err := cc.cardClient.ReadAllCardsToLearn(ctx, userId)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to retrieve cards: %v", err)})
 		return
 	}
 	ctx.JSON(http.StatusOK, response)
@@ -95,7 +90,7 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 	userId, err := GetUserIdFromContext(ctx)
 	if err != nil {
 		cc.log.Debug("Error getting user ID from context", "error", err)
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get user ID from context: %v", err)})
 		return
 	}
 	cc.log.Debug("Current User ID", "userId", userId)
@@ -107,7 +102,7 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 	if queryUserId != "" {
 		if uuidUserId, err = uuid.Parse(queryUserId); err != nil {
 			cc.log.Debug("Error parsing query user ID", "error", err)
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid user_id format"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid user_id format: %v", err)})
 			return
 		}
 		cc.log.Debug("Parsed Query User ID", "uuidUserId", uuidUserId)
@@ -126,7 +121,7 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 		cc.log.Debug("Query user specified, checking permissions...")
 		if !isAdmin && uuidUserId != userId {
 			cc.log.Debug("Access denied: non-admin user trying to access other user's cards")
-			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "User without admin rights cannot access other users' cards"})
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "User without admin rights cannot access other users' cards"})
 			return
 		}
 		targetUserId = uuidUserId
@@ -141,7 +136,7 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 	response, err := cc.cardClient.ReadAllCards(ctx, targetUserId)
 	if err != nil {
 		cc.log.Debug("Error calling card client", "error", err)
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to retrieve cards: %v", err)})
 		return
 	}
 
@@ -150,6 +145,44 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 		cc.log.Debug("First card", "card", response[0])
 	}
 
+	ctx.JSON(http.StatusOK, response)
+}
+
+// SearchUserPublicCards godoc
+//
+//	@Summary		Search user's public cards
+//	@Description	Retrieves all public cards created by a specific user
+//	@Tags			cards
+//	@Produce		json
+//	@Param			user_id	query		string	true	"User ID"
+//	@Success		200		{array}		model.Card
+//	@Failure		400		{object}	model.ErrorResponse	"Bad Request - Invalid user ID format"
+//	@Failure		500		{object}	model.ErrorResponse	"Internal Server Error - Failed to search user's public cards"
+//	@Router			/cards/public [get]
+func (cc *Controller) SearchPublicCards(ctx *gin.Context) {
+	var uid string
+	var ok bool
+	uid, ok = ctx.GetQuery("user_id")
+	if !ok || uid == "" {
+		response, err := cc.cardClient.SearchAllPublicCards(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to search public cards: %v", err)})
+			return
+		}
+		ctx.JSON(http.StatusOK, response)
+		return
+	}
+	parsedUid, err := uuid.Parse(uid)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid user_id format: %v", err)})
+		return
+	}
+
+	response, err := cc.cardClient.SearchUserPublicCards(ctx, parsedUid)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to search public cards: %v", err)})
+		return
+	}
 	ctx.JSON(http.StatusOK, response)
 }
 

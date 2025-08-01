@@ -4,8 +4,10 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/tomatoCoderq/card/pkg/model"
-	"github.com/tomatoCoderq/card/pkg/scheme"
+	// "github.com/tomatoCoderq/card/pkg/model"
+	"github.com/GOeda-Co/proto-contract/model/card"
+	// "github.com/tomatoCoderq/card/pkg/scheme"
+	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
@@ -48,7 +50,10 @@ func New(connectionString string, log *slog.Logger) *Repository {
 		return nil
 	}
 
-	db.AutoMigrate(&model.Card{})
+	if err := db.AutoMigrate(&model.Card{}); err != nil {
+		log.Error("Error during auto migration", "error", err)
+		return nil
+	}
 
 	return &Repository{db: db}
 }
@@ -79,6 +84,29 @@ func (cr Repository) ReadAllCardsByUser(userId uuid.UUID) ([]model.Card, error) 
 		return nil, err
 	}
 	return cards, err
+}
+
+func (cr Repository) SearchAllPublicCards() ([]model.Card, error) {
+	var cards []model.Card
+	err := cr.db.
+		Where("is_public = ?", true).
+		Find(&cards).Error
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
+func (cr Repository) SearchUserPublicCards(userId uuid.UUID) ([]model.Card, error) {
+	var cards []model.Card
+	err := cr.db.
+		Where("is_public = ?", true).
+		Where("created_by = ?", userId).
+		Find(&cards).Error
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
 }
 
 func (cr Repository) ReadCard(cardId uuid.UUID) (*model.Card, error) {
