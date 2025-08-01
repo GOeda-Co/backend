@@ -7,6 +7,7 @@ import (
 	// model "github.com/tomatoCoderq/deck/pkg/model"
 	modelCard "github.com/GOeda-Co/proto-contract/model/card"
 	model "github.com/GOeda-Co/proto-contract/model/deck"
+	"github.com/tomatoCoderq/deck/migrations"
 
 	"github.com/google/uuid"
 
@@ -23,6 +24,8 @@ func New(connectionString string, log *slog.Logger) *Repository {
 	if err != nil {
 		log.Error("Error during opening database")
 	}
+
+	migrations.MigrateToLatest(db, log)
 
 	if err = db.AutoMigrate(&model.Deck{}); err != nil {
 		log.Error("Error during auto migration", "error", err)

@@ -10,6 +10,8 @@ import (
 	// "github.com/tomatoCoderq/stats/pkg/model/review"
 	model "github.com/GOeda-Co/proto-contract/model/review"
 
+	"github.com/tomatoCoderq/stats/migrations"
+
 	// "github.com/tomatoCoderq/card/pkg/scheme"
 
 	"gorm.io/driver/postgres"
@@ -50,6 +52,8 @@ func New(connectionString string, log *slog.Logger) *Repository {
 		log.Error("Error during opening database")
 		return nil
 	}
+
+	migrations.MigrateToLatest(db, log)	
 
 	if err = db.AutoMigrate(&model.Review{}); err != nil {
 		log.Error("Error during AutoMigrate", "error", err)

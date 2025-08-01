@@ -8,6 +8,7 @@ import (
 	"github.com/GOeda-Co/proto-contract/model/card"
 	// "github.com/tomatoCoderq/card/pkg/scheme"
 	schemes "github.com/GOeda-Co/proto-contract/scheme/card"
+	"github.com/tomatoCoderq/card/migrations"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
@@ -44,11 +45,14 @@ type Repository struct {
 }
 
 func New(connectionString string, log *slog.Logger) *Repository {
+	
 	db, err := gorm.Open(postgres.Open(connectionString))
 	if err != nil {
 		log.Error("Error during opening database")
 		return nil
 	}
+
+	migrations.MigrateToLatest(db, log)
 
 	if err := db.AutoMigrate(&model.Card{}); err != nil {
 		log.Error("Error during auto migration", "error", err)

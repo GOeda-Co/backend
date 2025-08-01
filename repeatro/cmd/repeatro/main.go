@@ -79,6 +79,8 @@ func main() {
 	)
 	log.Debug("debug messages are enabled")
 
+	
+
 	ssoClient, err := ssoClient.New(context.Background(), log, cfg.Clients.SSO.Address, cfg.Clients.SSO.Timeout.Abs(), cfg.Clients.SSO.RetriesCount)
 	if err != nil {
 		panic(err)

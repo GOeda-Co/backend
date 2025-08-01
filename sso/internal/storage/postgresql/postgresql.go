@@ -8,9 +8,11 @@ import (
 	"time"
 
 	// "sso/internal/models"
+	"sso/internal/storage"
+	"sso/migrations"
+
 	modelsApp "github.com/GOeda-Co/proto-contract/model/app"
 	models "github.com/GOeda-Co/proto-contract/model/user"
-	"sso/internal/storage"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
@@ -50,6 +52,8 @@ func New(connString string, log *slog.Logger) (*Storage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: failed to connect after %d attempts: %w", op, maxRetries, err)
 	}
+
+	migrations.MigrateToLatest(DB, log)
 
 	// AutoMigrate your models
 	if err := DB.AutoMigrate(&models.User{}, &modelsApp.App{}); err != nil {
