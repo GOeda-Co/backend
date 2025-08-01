@@ -107,20 +107,16 @@ func (a *Auth) Login(
 	// Достаём пользователя из БД
 	user, err := a.usrStorage.User(ctx, email)
 	if err != nil {
-		fmt.Printf("%v\n", err)
 		if errors.Is(err, storage.ErrUserNotFound) {
 			a.log.Warn("user not found", sl.Err(err))
-
 			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 		}
 
 
-		// a.log.Error("failed to get user", sl.Err(err))
+		a.log.Error("failed to get user", sl.Err(err))
 
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
-
-	fmt.Println("GOT HERE", user)
 
 	// Проверяем корректность полученного пароля
 	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
