@@ -66,8 +66,8 @@ func New(
 	router.Handle(http.MethodPost, "/register", ctrl.Register)
 	router.Handle(http.MethodPost, "/login", ctrl.Login)
 	router.Handle(http.MethodGet, "/admin", ctrl.IsAdmin)
-
-	//TODO CHANGE
+	//TODO: add admin restriction for creation
+	router.Handle(http.MethodPost, "/app/register", ctrl.RegisterApp)
 
 	cards := router.Group("/cards")
 	cards.Use(security.AuthMiddleware())

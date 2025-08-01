@@ -3,7 +3,7 @@ module github.com/tomatoCoderq/repeatro
 go 1.24.0
 
 require (
-	github.com/GOeda-Co/proto-contract v0.4.6
+	github.com/GOeda-Co/proto-contract v0.5.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.3.0

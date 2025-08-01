@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strconv"
+
 	// "fmt"
 
 	"sso/internal/services/auth"
@@ -39,6 +42,11 @@ type Auth interface {
 		ctx context.Context,
 		userId uuid.UUID,
 	) (isAdmin bool, err error)
+	RegisterApp(
+		ctx context.Context,
+		name string,
+		secret string,
+	) (appID int, err error)
 }
 
 func Register(gRPCServer *grpc.Server, auth Auth) {
@@ -68,7 +76,7 @@ func (s *serverAPI) Login(
 			return nil, status.Error(codes.InvalidArgument, "invalid email or password")
 		}
 
-		return nil, status.Error(codes.Internal, "failed to login")
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to login: %v", err))
 	}
 
 	return &ssov1.LoginResponse{Token: token}, nil
@@ -124,4 +132,21 @@ func (s *serverAPI) IsAdmin(ctx context.Context, in *ssov1.IsAdminRequest) (*sso
 	}
 
 	return &ssov1.IsAdminResponse{IsAdmin: isAdmin}, nil
+}
+
+func (s *serverAPI) RegisterApp(ctx context.Context, in *ssov1.RegisterAppRequest) (*ssov1.RegisterAppResponse, error) {
+	if in.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "name is required")
+	}
+
+	if in.Secret == "" {
+		return nil, status.Error(codes.InvalidArgument, "secret is required")
+	}
+
+	appID, err := s.auth.RegisterApp(ctx, in.Name, in.Secret)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to register app")
+	}
+
+	return &ssov1.RegisterAppResponse{AppId: strconv.Itoa(appID)}, nil
 }

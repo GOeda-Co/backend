@@ -24,6 +24,7 @@ type UserStorage interface {
 	SaveUser(ctx context.Context, email string, hashPass []byte, name string) (uid uuid.UUID, err error)
 	User(ctx context.Context, email string) (models.User, error)
 	IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error)
+	RegisterApp(ctx context.Context, name string, secret string) (appID int, err error)
 }
 
 // interface to get app from the storage
@@ -106,16 +107,20 @@ func (a *Auth) Login(
 	// Достаём пользователя из БД
 	user, err := a.usrStorage.User(ctx, email)
 	if err != nil {
+		fmt.Printf("%v\n", err)
 		if errors.Is(err, storage.ErrUserNotFound) {
 			a.log.Warn("user not found", sl.Err(err))
 
 			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 		}
 
-		a.log.Error("failed to get user", sl.Err(err))
+
+		// a.log.Error("failed to get user", sl.Err(err))
 
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
+
+	fmt.Println("GOT HERE", user)
 
 	// Проверяем корректность полученного пароля
 	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
@@ -125,6 +130,7 @@ func (a *Auth) Login(
 	}
 
 	// Получаем информацию о приложении
+	a.log.Debug("getting app information", slog.Int("app_id", appID))
 	app, err := a.appProvider.App(ctx, appID)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
@@ -162,4 +168,25 @@ func (a *Auth) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 	log.Info("checked if user is admin", slog.Bool("is_admin", isAdmin))
 
 	return isAdmin, nil
+}
+
+func (a *Auth) RegisterApp(ctx context.Context, name string, secret string) (int, error) {
+	const op = "Auth.RegisterApp"
+
+	log := a.log.With(
+		slog.String("op", op),
+		slog.String("name", name),
+	)
+
+	log.Info("registering new app")
+
+	appID, err := a.usrStorage.RegisterApp(ctx, name, secret)
+	if err != nil {
+		log.Error("failed to register app", sl.Err(err))
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Info("app registered successfully", slog.Int("app_id", appID))
+
+	return appID, nil
 }
