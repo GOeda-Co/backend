@@ -155,30 +155,17 @@ func (cc *Controller) ReadAllCards(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-// SearchAllPublicCards godoc
-//
-//	@Summary		Search all public cards
-//	@Description	Retrieves all public cards available in the system
-//	@Tags			cards
-//	@Produce		json
-//	@Success		200		{array}		model.Card
-//	@Failure		500		{object}	model.ErrorResponse	"Internal Server Error - Failed to search public cards"
-//	@Router			/cards/public [get]
-func (cc *Controller) SearchAllPublicCards(ctx *gin.Context) {
-
-}
-
 // SearchUserPublicCards godoc
 //
 //	@Summary		Search user's public cards
 //	@Description	Retrieves all public cards created by a specific user
 //	@Tags			cards
 //	@Produce		json
-//	@Param			user_id	path		string	true	"User ID"
+//	@Param			user_id	query		string	true	"User ID"
 //	@Success		200		{array}		model.Card
 //	@Failure		400		{object}	model.ErrorResponse	"Bad Request - Invalid user ID format"
 //	@Failure		500		{object}	model.ErrorResponse	"Internal Server Error - Failed to search user's public cards"
-//	@Router			/cards/public/user/{user_id} [get]
+//	@Router			/cards/public [get]
 func (cc *Controller) SearchPublicCards(ctx *gin.Context) {
 	var uid string
 	var ok bool

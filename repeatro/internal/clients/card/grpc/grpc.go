@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	"github.com/tomatoCoderq/repeatro/internal/lib/convert"
+	"github.com/GOeda-Co/proto-contract/convert"
 
 	// model "github.com/tomatoCoderq/repeatro/pkg/models"
 	modelCard "github.com/GOeda-Co/proto-contract/model/card"
@@ -85,12 +85,12 @@ func (c *Client) AddCard(ctx context.Context, card *modelCard.Card) (modelCard.C
 	ctx = withToken(ctx, ctx.Value("token").(string))
 
 	resp, err := c.api.AddCard(ctx, &cardv1.AddCardRequest{
-		Card: convert.ModelToProto(card),
+		Card: convert.FromModelToProtoCard(card),
 	})
 	if err != nil {
 		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
-	cardModel, err := convert.ProtoToModel(resp.Card)
+	cardModel, err := convert.FromProtoToModelCard(resp.Card)
 	if err != nil {
 		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -108,7 +108,7 @@ func (c *Client) ReadAllCardsToLearn(ctx context.Context, uid uuid.UUID) ([]mode
 	}
 	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
-		card, err := convert.ProtoToModel(protoCard)
+		card, err := convert.FromProtoToModelCard(protoCard)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -128,7 +128,7 @@ func (c *Client) ReadAllCards(ctx context.Context, uid uuid.UUID) ([]modelCard.C
 	}
 	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
-		card, err := convert.ProtoToModel(protoCard)
+		card, err := convert.FromProtoToModelCard(protoCard)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -148,7 +148,7 @@ func (c *Client) SearchAllPublicCards(ctx context.Context) ([]modelCard.Card, er
 	}
 	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
-		card, err := convert.ProtoToModel(protoCard)
+		card, err := convert.FromProtoToModelCard(protoCard)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -168,7 +168,7 @@ func (c *Client) SearchUserPublicCards(ctx context.Context, uid uuid.UUID) ([]mo
 	}
 	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
-		card, err := convert.ProtoToModel(protoCard)
+		card, err := convert.FromProtoToModelCard(protoCard)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -200,7 +200,7 @@ func (c *Client) UpdateCard(ctx context.Context, uid uuid.UUID, cid uuid.UUID, c
 	if err != nil {
 		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
-	cardModel, err := convert.ProtoToModel(resp.Card)
+	cardModel, err := convert.FromProtoToModelCard(resp.Card)
 	if err != nil {
 		return modelCard.Card{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -227,7 +227,7 @@ func (c *Client) AddAnswers(ctx context.Context, uid uuid.UUID, answers []*schem
 
 	ctx = withToken(ctx, ctx.Value("token").(string))
 
-	convertedAnswers, err := convert.AnswersToProtoSchemes(answers)
+	convertedAnswers, err := convert.FromAnswerSchemesToProtosCard(answers)
 	if err != nil {
 		fmt.Printf("%s: %v", op, err)
 		return "", fmt.Errorf("%s: %w", op, err)

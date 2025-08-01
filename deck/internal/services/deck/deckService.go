@@ -20,6 +20,8 @@ type DeckRepository interface {
 	ReadAllDecksOfUser(userId uuid.UUID) ([]model.Deck, error)
 	ReadAllDecks() ([]model.Deck, error)
 	ReadDeck(deckId uuid.UUID) (*model.Deck, error)
+	SearchAllPublicDecks() ([]model.Deck, error)
+	SearchUserPublicDecks(userId uuid.UUID) ([]model.Deck, error)
 	DeleteDeck(deckId uuid.UUID) error
 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error
 	FindAllCardsInDeck(deckId uuid.UUID) ([]modelCard.Card, error)
@@ -34,15 +36,6 @@ func New(log *slog.Logger, DeckRepository DeckRepository) *Service {
 		DeckRepository: DeckRepository,
 	}
 }
-
-// type DeckServiceInterface interface {
-// 	AddCard(deck *model.Deck, userId uuid.UUID) (*model.Deck, error)
-// 	ReadAllDecksOfUser(userId uuid.UUID) ([]model.Deck, error)
-// 	ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]model.Card, error)
-// 	ReadDeck(deckId uuid.UUID, userId uuid.UUID) (*model.Deck, error)
-// 	DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error
-// 	AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID, userId uuid.UUID) error
-// }
 
 func (ds *Service) AddDeck(deck *model.Deck) (*model.Deck, error) {
 	err := ds.DeckRepository.AddDeck(deck)
@@ -74,7 +67,18 @@ func (ds *Service) ReadAllCardsFromDeck(deckId uuid.UUID, userId uuid.UUID) ([]m
 		return nil, err
 	}
 	return cards, nil
+}
 
+func (ds *Service) SearchAllPublicDecks() ([]model.Deck, error) {
+	return ds.DeckRepository.SearchAllPublicDecks()
+}
+
+func (ds *Service) SearchUserPublicDecks(userId string) ([]model.Deck, error) {
+	userUUID, err := uuid.Parse(userId)
+	if err != nil {
+		return nil, err
+	}
+	return ds.DeckRepository.SearchUserPublicDecks(userUUID)
 }
 
 func (ds *Service) DeleteDeck(deckId uuid.UUID, userId uuid.UUID) error {

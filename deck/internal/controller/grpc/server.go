@@ -9,7 +9,8 @@ import (
 	deckv1 "github.com/GOeda-Co/proto-contract/gen/go/deck"
 	"github.com/google/uuid"
 	"github.com/tomatoCoderq/deck/internal/controller"
-	"github.com/tomatoCoderq/deck/internal/lib/convert"
+	"github.com/GOeda-Co/proto-contract/convert"
+	"github.com/GOeda-Co/proto-contract/model/deck"
 	"github.com/tomatoCoderq/deck/internal/lib/security"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -45,19 +46,26 @@ func (s *DeckServerAPI) AddDeck(ctx context.Context, in *deckv1.AddDeckRequest) 
 		return nil, status.Error(codes.InvalidArgument, "Name is required")
 	}
 
-	authUser, err := GetAuthUser(ctx)
+	// authUser, err := GetAuthUser(ctx)
 
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "User not authenticated")
+	// if err != nil {
+	// 	return nil, status.Error(codes.Unauthenticated, "User not authenticated")
+	// }
+
+	deck := &model.Deck{
+		Name:        in.Name,
+		Description: in.Description,
+		IsPublic:    in.IsPublic,
 	}
+	
 
-	deck := convert.ProtoToModelDeck(in, authUser.ID.String())
+	// deck, _ := convert.FromProtoToModelDeck(in)
 	createdDeck, err := s.service.AddDeck(deck)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to add deck")
 	}
 
-	return &deckv1.DeckResponse{Deck: convert.ModelToProtoDeck(createdDeck)}, nil
+	return &deckv1.DeckResponse{Deck: convert.FromModelToProtoDeck(createdDeck)}, nil
 }
 
 func (s *DeckServerAPI) ReadAllDecks(ctx context.Context, in *emptypb.Empty) (*deckv1.DeckListResponse, error) {
@@ -74,7 +82,7 @@ func (s *DeckServerAPI) ReadAllDecks(ctx context.Context, in *emptypb.Empty) (*d
 
 	var protoDecks []*deckv1.Deck
 	for _, deck := range decks {
-		protoDecks = append(protoDecks, convert.ModelToProtoDeck(&deck))
+		protoDecks = append(protoDecks, convert.FromModelToProtoDeck(&deck))
 	}
 
 	return &deckv1.DeckListResponse{Decks: protoDecks}, nil
@@ -96,7 +104,37 @@ func (s *DeckServerAPI) ReadDeck(ctx context.Context, in *deckv1.ReadDeckRequest
 		return nil, status.Error(codes.PermissionDenied, err.Error())
 	}
 
-	return &deckv1.DeckResponse{Deck: convert.ModelToProtoDeck(deck)}, nil
+	return &deckv1.DeckResponse{Deck: convert.FromModelToProtoDeck(deck)}, nil
+}
+
+func (s *DeckServerAPI) SearchAllPublicDecks(ctx context.Context, in *emptypb.Empty) (*deckv1.SearchAllPublicDecksResponse, error) {
+	decks, err := s.service.SearchAllPublicDecks()
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to fetch public decks")
+	}
+
+	var protoDecks []*deckv1.Deck
+	for _, deck := range decks {
+		protoDecks = append(protoDecks, convert.FromModelToProtoDeck(&deck))
+	}
+
+	return &deckv1.SearchAllPublicDecksResponse{Decks: protoDecks}, nil
+}
+
+func (s *DeckServerAPI) SearchUserPublicDecks(ctx context.Context, in *deckv1.SearchUserPublicDecksRequest) (*deckv1.SearchUserPublicDecksResponse, error) {
+	if in.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "User ID is required")
+	}
+	decks, err := s.service.SearchUserPublicDecks(in.UserId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to fetch user's public decks")
+	}
+
+	var protoDecks []*deckv1.Deck
+	for _, deck := range decks {
+		protoDecks = append(protoDecks, convert.FromModelToProtoDeck(&deck))
+	}
+	return &deckv1.SearchUserPublicDecksResponse{Decks: protoDecks}, nil
 }
 
 func (s *DeckServerAPI) DeleteDeck(ctx context.Context, in *deckv1.ReadDeckRequest) (*emptypb.Empty, error) {
@@ -158,7 +196,7 @@ func (s *DeckServerAPI) ReadCardsFromDeck(ctx context.Context, in *deckv1.ReadDe
 
 	var protoCards []*cardv1.Card
 	for _, card := range cards {
-		protoCards = append(protoCards, convert.ModelToProto(&card))
+		protoCards = append(protoCards, convert.FromModelToProtoCard(&card))
 	}
 
 	return &deckv1.CardListResponse{Cards: protoCards}, nil

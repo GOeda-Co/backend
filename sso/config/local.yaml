@@ -7,6 +7,6 @@ grpc:
   address: ":44044"
   timeout: 10s
 
-token_ttl: 15m
+token_ttl: 1h
 
 secret: ${SECRET}

@@ -42,6 +42,15 @@ func (m *MockDeckRepository) DeleteDeck(deckId uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *MockDeckRepository) SearchAllPublicDecks() ([]model.Deck, error) {
+	args := m.Called()
+	return args.Get(0).([]model.Deck), args.Error(1)
+}
+func (m *MockDeckRepository) SearchUserPublicDecks(userId uuid.UUID) ([]model.Deck, error) {
+	args := m.Called(userId)
+	return args.Get(0).([]model.Deck), args.Error(1)
+}
+
 func (m *MockDeckRepository) AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error {
 	args := m.Called(cardId, deckId)
 	return args.Error(0)

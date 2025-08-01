@@ -9,13 +9,12 @@ import (
 	cardv1 "github.com/GOeda-Co/proto-contract/gen/go/card"
 	deckv1 "github.com/GOeda-Co/proto-contract/gen/go/deck"
 
+	"github.com/GOeda-Co/proto-contract/convert"
+	modelCard "github.com/GOeda-Co/proto-contract/model/card"
+	modelDeck "github.com/GOeda-Co/proto-contract/model/deck"
 	"github.com/google/uuid"
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	"github.com/tomatoCoderq/repeatro/internal/lib/convert"
-	modelDeck "github.com/GOeda-Co/proto-contract/model/deck"
-	modelCard "github.com/GOeda-Co/proto-contract/model/card"
-
 
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -100,7 +99,7 @@ func (c *Client) AddDeck(ctx context.Context, deck *modelDeck.Deck) (modelDeck.D
 		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	deckModel, err := convert.ProtoDeckToModel(resp.Deck)
+	deckModel, err := convert.FromProtoToModelDeck(resp.Deck)
 	if err != nil {
 		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -119,7 +118,7 @@ func (c *Client) ReadAllDecks(ctx context.Context) ([]modelDeck.Deck, error) {
 	}
 	decks := make([]modelDeck.Deck, 0, len(resp.Decks))
 	for _, protoDeck := range resp.Decks {
-		deck, err := convert.ProtoDeckToModel(protoDeck)
+		deck, err := convert.FromProtoToModelDeck(protoDeck)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -139,11 +138,53 @@ func (c *Client) ReadDeck(ctx context.Context, did uuid.UUID) (modelDeck.Deck, e
 	if err != nil {
 		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
-	deckModel, err := convert.ProtoDeckToModel(resp.Deck)
+	deckModel, err := convert.FromProtoToModelDeck(resp.Deck)
 	if err != nil {
 		return modelDeck.Deck{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return *deckModel, nil
+}
+
+func (c *Client) SearchAllPublicDecks(ctx context.Context) ([]modelDeck.Deck, error) {
+	const op = "grpc.SearchAllPublicDecks"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+
+	resp, err := c.api.SearchAllPublicDecks(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	decks := make([]modelDeck.Deck, 0, len(resp.Decks))
+	for _, protoDeck := range resp.Decks {
+		deck, err := convert.FromProtoToModelDeck(protoDeck)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		decks = append(decks, *deck)
+	}
+	return decks, nil
+}
+
+func (c *Client) SearchUserPublicDecks(ctx context.Context, uid string) ([]modelDeck.Deck, error) {
+	const op = "grpc.SearchUserPublicDecks"
+
+	ctx = withToken(ctx, ctx.Value("token").(string))
+
+	resp, err := c.api.SearchUserPublicDecks(ctx, &deckv1.SearchUserPublicDecksRequest{
+		UserId: uid,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	decks := make([]modelDeck.Deck, 0, len(resp.Decks))
+	for _, protoDeck := range resp.Decks {
+		deck, err := convert.FromProtoToModelDeck(protoDeck)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		decks = append(decks, *deck)
+	}
+	return decks, nil
 }
 
 func (c *Client) DeleteDeck(ctx context.Context, did uuid.UUID) error {
@@ -188,7 +229,7 @@ func (c *Client) ReadCardsFromDeck(ctx context.Context, did uuid.UUID) ([]modelC
 	}
 	cards := make([]modelCard.Card, 0, len(resp.Cards))
 	for _, protoCard := range resp.Cards {
-		card, err := convert.ProtoToModel(&cardv1.Card{CardId: protoCard.CardId,
+		card, err := convert.FromProtoToModelCard(&cardv1.Card{CardId: protoCard.CardId,
 			Word:             protoCard.Word,
 			Translation:      protoCard.Translation,
 			DeckId:           protoCard.DeckId,

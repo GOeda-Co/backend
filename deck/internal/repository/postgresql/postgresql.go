@@ -45,6 +45,18 @@ func (r *Repository) ReadAllDecks() ([]model.Deck, error) {
 	return decks, err
 }
 
+func (r * Repository) SearchAllPublicDecks() ([]model.Deck, error) {
+	var decks []model.Deck
+	err := r.db.Where("is_public = ?", true).Preload("Cards").Find(&decks).Error
+	return decks, err
+}
+
+func (r * Repository) SearchUserPublicDecks(userId uuid.UUID) ([]model.Deck, error) {
+	var decks []model.Deck
+	err := r.db.Where("is_public = ? AND created_by = ?", true, userId).Preload("Cards").Find(&decks).Error
+	return decks, err
+}
+
 func (r *Repository) ReadDeck(deckId uuid.UUID) (*model.Deck, error) {
 	var deck model.Deck
 	err := r.db.Where("deck_id = ?", deckId).Preload("Cards").First(&deck).Error
@@ -65,11 +77,21 @@ func (r *Repository) FindAllCardsInDeck(deckId uuid.UUID) ([]modelCard.Card, err
 }
 
 func (r *Repository) AddCardToDeck(cardId uuid.UUID, deckId uuid.UUID) error {
+	var deck *model.Deck
+	var err error
+
 	tx := r.db.Begin()
 
+	if deck, err = r.ReadDeck(deckId); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// After adding a card to a deck, deck's is_public updated to deck's is_public
 	if err := tx.Model(&modelCard.Card{}).
 		Where("card_id = ?", cardId).
-		Update("deck_id", deckId).Error; err != nil {
+		Update("deck_id", deckId).
+		Update("is_public", deck.IsPublic).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
